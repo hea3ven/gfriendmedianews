@@ -28,6 +28,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'de.btobastian.javacord:javacord:2.0.11'
+    compile 'org.twitter4j:twitter4j-core:4.0.4'
 
-    testCompile group: 'junit', name: 'junit', version: '5.11'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M2'
 }
