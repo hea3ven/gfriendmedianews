@@ -2,14 +2,14 @@ group 'com.hea3ven.gfriendmedianews'
 version '1.0.0'
 
 buildscript {
-    ext.kotlin_version = '1.0.4'
+	ext.kotlin_version = '1.0.4'
 
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+	}
 }
 
 apply plugin: 'java'
@@ -18,17 +18,18 @@ apply plugin: 'kotlin'
 sourceCompatibility = 1.5
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 	maven {
-        name 'javacord-repo'
-        url 'http://repo.bastian-oppermann.de'
-    }
+		name 'javacord-repo'
+		url 'http://repo.bastian-oppermann.de'
+	}
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'de.btobastian.javacord:javacord:2.0.11'
-    compile 'org.twitter4j:twitter4j-core:4.0.4'
+	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+	compile 'de.btobastian.javacord:javacord:2.0.11'
+	compile 'org.twitter4j:twitter4j-core:4.0.4'
+	compile 'com.google.code.gson:gson:2.7'
 
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M2'
+	testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M2'
 }

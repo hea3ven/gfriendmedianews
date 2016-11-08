@@ -1,12 +1,15 @@
 package com.hea3ven.gfriendmedianews
 
 import com.google.common.util.concurrent.FutureCallback
+import com.google.gson.JsonParser
 import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.Javacord
 import de.btobastian.javacord.listener.message.MessageCreateListener
 import twitter4j.Paging
 import twitter4j.TwitterFactory
 import twitter4j.auth.AccessToken
+import java.io.InputStreamReader
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -44,8 +47,23 @@ fun main(args: Array<String>) {
 								url.expandedURL.contains(it.retweetedStatus.id.toString())
 							}.forEach { text = text.replace(it.url, "") }
 							val title = date + " KST **@" + it.user.screenName + "** retweeted **@" +
-									it.retweetedStatus.user.screenName + "**'s tweet:\n"
+									it.retweetedStatus.user.screenName +"**'s tweet:\n"
 							message.reply("==========\n\n" + title + text + "\n")
+						}
+					}
+
+					URL("https://www.instagram.com/gfriendofficial/media").openStream().use { stream ->
+						var posts = JsonParser().parse(InputStreamReader(stream)).asJsonObject
+						posts.getAsJsonArray("items").forEach { post ->
+							val caption = post.asJsonObject.getAsJsonObject("caption")
+							val text = caption.get("text").asString
+							val date = dateFmt.format(Date(caption.get("created_time").asLong * 1000))
+							val username = caption.getAsJsonObject("from").get("username").asString
+							val img = post.asJsonObject.getAsJsonObject("images")
+							val picUrl = img.getAsJsonObject("standard_resolution").get("url").asString
+
+							val title = date + " KST **@" + username + "** posted to instagram:\n"
+							message.reply("==========\n\n" + title + text + "\n" + picUrl + "\n")
 						}
 					}
 				}
