@@ -1,5 +1,10 @@
 package com.hea3ven.gfriendmedianews
 
+import com.google.api.client.http.HttpRequestInitializer
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.services.youtube.YouTube
+import com.google.api.services.youtube.YouTubeRequestInitializer
 import com.google.common.util.concurrent.FutureCallback
 import com.google.gson.JsonParser
 import de.btobastian.javacord.DiscordAPI
@@ -22,6 +27,12 @@ fun main(args: Array<String>) {
 			val twitter = TwitterFactory.getSingleton()
 			twitter.setOAuthConsumer(Config.twitterConsumerKey, Config.twitterConsumerSecret)
 			twitter.oAuthAccessToken = AccessToken(Config.twitterAccessToken, Config.twitterAccessSecret)
+
+			val youtube = YouTube.Builder(NetHttpTransport(), JacksonFactory(),
+					HttpRequestInitializer { }).setYouTubeRequestInitializer(
+					YouTubeRequestInitializer(Config.youtubeApiKey)).setApplicationName(
+					"gfriend-media-news").build()
+
 			api.registerListener(MessageCreateListener { api, message ->
 				val content = message.content
 				if (content.toLowerCase() == "ping") {
@@ -47,7 +58,7 @@ fun main(args: Array<String>) {
 								url.expandedURL.contains(it.retweetedStatus.id.toString())
 							}.forEach { text = text.replace(it.url, "") }
 							val title = date + " KST **@" + it.user.screenName + "** retweeted **@" +
-									it.retweetedStatus.user.screenName +"**'s tweet:\n"
+									it.retweetedStatus.user.screenName + "**'s tweet:\n"
 							message.reply("==========\n\n" + title + text + "\n")
 						}
 					}
@@ -65,6 +76,23 @@ fun main(args: Array<String>) {
 							val title = date + " KST **@" + username + "** posted to instagram:\n"
 							message.reply("==========\n\n" + title + text + "\n" + picUrl + "\n")
 						}
+					}
+
+					val channelsReq = youtube.channels().list("contentDetails")
+					channelsReq.forUsername = "gfrdofficial"
+					channelsReq.fields = "items/contentDetails"
+					val channels = channelsReq.execute().items
+					val uploadsId = channels.get(0).contentDetails.relatedPlaylists.uploads
+					val playlistReq = youtube.playlistItems().list("snippet,contentDetails")
+					playlistReq.playlistId = uploadsId
+					val playlistItems = playlistReq.execute().items
+					playlistItems.forEach {
+						val date = dateFmt.format(Date(it.snippet.publishedAt.value))
+//				val text = "*" + it.snippet.title + "*\n<https://youtube.com/watch?v=" + it.contentDetails.videoId + ">\n" + it.snippet.thumbnails.high.url
+						val text = "https://youtube.com/watch?v=" + it.contentDetails.videoId
+						val username = it.snippet.channelTitle
+						val title = "__" + date + " KST **" + username + "** posted to youtube:__\n"
+						message.reply("==========\n\n" + title + text + "\n")
 					}
 				}
 			})

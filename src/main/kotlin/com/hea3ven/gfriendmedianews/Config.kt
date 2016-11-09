@@ -13,6 +13,8 @@ object Config {
 
 	var twitterAccessSecret: String
 
+	val youtubeApiKey: String
+
 	init {
 		val props = Properties()
 		props.load(Config::class.java.getResourceAsStream("/config.properties"))
@@ -21,6 +23,7 @@ object Config {
 		twitterConsumerSecret = props.getProperty("twitterConsumerSecret")
 		twitterAccessToken = props.getProperty("twitterAccessToken")
 		twitterAccessSecret = props.getProperty("twitterAccessSecret")
+		youtubeApiKey = props.getProperty("youtubeApiKey")
 	}
 
 }
