@@ -7,6 +7,11 @@ import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.YouTubeRequestInitializer
 import com.google.common.util.concurrent.FutureCallback
 import com.google.gson.JsonParser
+import com.hea3ven.gfriendmedianews.news.post.NewsPost
+import com.hea3ven.gfriendmedianews.news.post.TwitterNewsPost
+import com.hea3ven.gfriendmedianews.news.source.InstagramNewsSource
+import com.hea3ven.gfriendmedianews.news.source.TwitterNewsSource
+import com.hea3ven.gfriendmedianews.news.source.YouTubeNewsSource
 import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.Javacord
 import de.btobastian.javacord.listener.message.MessageCreateListener
@@ -15,15 +20,12 @@ import twitter4j.TwitterFactory
 import twitter4j.auth.AccessToken
 import java.io.InputStreamReader
 import java.net.URL
-import java.text.SimpleDateFormat
 import java.util.*
 
 fun main(args: Array<String>) {
 	val api = Javacord.getApi(Config.discordApiToken, true)
 	api.connect(object : FutureCallback<DiscordAPI> {
 		override fun onSuccess(result: DiscordAPI?) {
-			val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-			dateFmt.timeZone = TimeZone.getTimeZone("GMT+0900")
 			val twitter = TwitterFactory.getSingleton()
 			twitter.setOAuthConsumer(Config.twitterConsumerKey, Config.twitterConsumerSecret)
 			twitter.oAuthAccessToken = AccessToken(Config.twitterAccessToken, Config.twitterAccessSecret)
@@ -32,6 +34,12 @@ fun main(args: Array<String>) {
 					HttpRequestInitializer { }).setYouTubeRequestInitializer(
 					YouTubeRequestInitializer(Config.youtubeApiKey)).setApplicationName(
 					"gfriend-media-news").build()
+
+			val channel = api.channels.find { it.name.equals("official_media") }!!
+
+			val twtSrc = TwitterNewsSource()
+			val istgSrc = InstagramNewsSource()
+			val youSrc = YouTubeNewsSource()
 
 			api.registerListener(MessageCreateListener { api, message ->
 				val content = message.content
@@ -42,39 +50,29 @@ fun main(args: Array<String>) {
 					message.delete()
 					message.reply(message.author.mentionTag + " slapped " + content.substring(6))
 				} else if (content.startsWith("/init")) {
+					val newsPosts = mutableListOf<NewsPost>()
 					val statuses = twitter.timelines().getUserTimeline("@GFRDOfficial", Paging(1, 5))
 					statuses.forEach {
-						val date = dateFmt.format(it.createdAt)
-						if (it.retweetedStatus == null) {
-							var text = it.text
-							it.urlEntities.filter { url ->
-								url.expandedURL.contains(it.id.toString())
-							}.forEach { text = text.replace(it.url, "") }
-							val title = date + " KST **@" + it.user.screenName + "** tweeted:\n"
-							message.reply("==========\n\n" + title + text + "\n")
-						} else {
-							var text = it.retweetedStatus.text
-							it.retweetedStatus.urlEntities.filter { url ->
-								url.expandedURL.contains(it.retweetedStatus.id.toString())
-							}.forEach { text = text.replace(it.url, "") }
-							val title = date + " KST **@" + it.user.screenName + "** retweeted **@" +
-									it.retweetedStatus.user.screenName + "**'s tweet:\n"
-							message.reply("==========\n\n" + title + text + "\n")
-						}
+						val date = it.createdAt
+						val text = if (it.retweetedStatus == null) it.text else it.retweetedStatus.text
+						val userName = "@" + it.user.screenName
+						var rtUserName = it.retweetedStatus?.user?.screenName
+						if (rtUserName != null)
+							rtUserName = "@" + rtUserName
+						newsPosts.add(TwitterNewsPost(date, userName, rtUserName, twtSrc, text))
 					}
 
 					URL("https://www.instagram.com/gfriendofficial/media").openStream().use { stream ->
 						var posts = JsonParser().parse(InputStreamReader(stream)).asJsonObject
 						posts.getAsJsonArray("items").forEach { post ->
 							val caption = post.asJsonObject.getAsJsonObject("caption")
-							val text = caption.get("text").asString
-							val date = dateFmt.format(Date(caption.get("created_time").asLong * 1000))
-							val username = caption.getAsJsonObject("from").get("username").asString
 							val img = post.asJsonObject.getAsJsonObject("images")
-							val picUrl = img.getAsJsonObject("standard_resolution").get("url").asString
 
-							val title = date + " KST **@" + username + "** posted to instagram:\n"
-							message.reply("==========\n\n" + title + text + "\n" + picUrl + "\n")
+							val date = Date(caption.get("created_time").asLong * 1000)
+							val userName = "@" + caption.getAsJsonObject("from").get("username").asString
+							val picUrl = img.getAsJsonObject("standard_resolution").get("url").asString
+							val text = caption.get("text").asString + "\n" + picUrl
+							newsPosts.add(NewsPost(date, userName, istgSrc, text))
 						}
 					}
 
@@ -87,12 +85,13 @@ fun main(args: Array<String>) {
 					playlistReq.playlistId = uploadsId
 					val playlistItems = playlistReq.execute().items
 					playlistItems.forEach {
-						val date = dateFmt.format(Date(it.snippet.publishedAt.value))
-//				val text = "*" + it.snippet.title + "*\n<https://youtube.com/watch?v=" + it.contentDetails.videoId + ">\n" + it.snippet.thumbnails.high.url
 						val text = "https://youtube.com/watch?v=" + it.contentDetails.videoId
-						val username = it.snippet.channelTitle
-						val title = "__" + date + " KST **" + username + "** posted to youtube:__\n"
-						message.reply("==========\n\n" + title + text + "\n")
+						val date = Date(it.snippet.publishedAt.value)
+						val userName = it.snippet.channelTitle
+						newsPosts.add(NewsPost(date, userName, youSrc, text))
+					}
+					newsPosts.forEach {
+						it.post(channel)
 					}
 				}
 			})
@@ -105,3 +104,4 @@ fun main(args: Array<String>) {
 	while (true)
 		Thread.sleep(5000)
 }
+
