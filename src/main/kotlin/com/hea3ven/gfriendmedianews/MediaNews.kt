@@ -1,0 +1,114 @@
+package com.hea3ven.gfriendmedianews
+
+import com.hea3ven.gfriendmedianews.commands.CommandManager
+import com.hea3ven.gfriendmedianews.domain.ServerConfig
+import com.hea3ven.gfriendmedianews.persistance.Persistence
+import de.btobastian.javacord.DiscordAPI
+import de.btobastian.javacord.entities.Channel
+import de.btobastian.javacord.entities.Server
+import de.btobastian.javacord.entities.message.Message
+import org.slf4j.LoggerFactory
+
+class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
+
+	private val serverManagers = mutableMapOf<String, ServerNewsManager>()
+
+	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.MediaNews")
+
+	private var stop = false
+
+	private val commandManager = CommandManager.builder()
+			.addCommand("\$info", { message, args -> onInfo(message) })
+			.addCommand("\$stop", { message, args -> onStop(message) })
+			.addCommand("\$slap", { message, args -> onSlap(message, args) })
+			.addCommand("\$setchannel", { message, args -> onSetChannel(message, args) })
+			.addCommand("\$addsrc", { message, args -> onAddSrc(message, args) })
+			.build()
+
+	fun start() {
+		logger.info("Connecting to discord")
+		discord.connectBlocking()
+		logger.info("Connecting established")
+		onConnect()
+		while (!stop) {
+			logger.trace("Sleeping")
+			Thread.sleep(10000)
+			logger.trace("Fetching the news")
+			fetchNews()
+		}
+		Thread.sleep(5000)
+		logger.info("Disconnecting from discord")
+		discord.disconnect()
+		logger.info("Connection closed")
+	}
+
+	private fun fetchNews() {
+		for (serverManager in serverManagers.values) {
+			serverManager.fetchNews(persistence, discord)
+		}
+	}
+
+	fun onConnect() {
+		persistence.beginTransaction().use { tx ->
+			for (server in discord.servers) {
+				var serverConfig = tx.serverConfigDao.findByServerId(server.id)
+				if (serverConfig == null) {
+					serverConfig = ServerConfig(serverId = server.id!!)
+					tx.serverConfigDao.persist(serverConfig)
+				}
+				val serverManager = ServerNewsManager(serverConfig)
+				add(serverManager)
+			}
+		}
+		commandManager.init(discord)
+	}
+
+	fun add(serverManager: ServerNewsManager) {
+		serverManagers.put(serverManager.serverConfig.serverId, serverManager)
+	}
+
+	private fun onInfo(message: Message) {
+		val server = message.channelReceiver.server
+		getManager(server).showInfo(server, message)
+	}
+
+	fun onStop(message: Message) {
+		logger.info("Sending stop signal")
+		message.reply("Goodbye!")
+		stop = true
+	}
+
+	fun onSlap(message: Message, args: Array<String>) {
+		message.delete()
+		message.reply(message.author.mentionTag + " slapped " + args.joinToString())
+	}
+
+	fun onSetChannel(message: Message, args: Array<String>) {
+		val channel: Channel?
+		if (args[0].startsWith("<#")) {
+			channel = message.channelReceiver.server.getChannelById(args[0].substring(2, args[0].length - 1))
+		} else {
+			channel = message.channelReceiver.server.channels.find { it.name == args[0] }
+		}
+		if (channel != null) {
+			serverManagers[message.channelReceiver.server.id]!!.setChannel(persistence, channel.id)
+			message.reply("The news channel has been set as <#" + channel.id + ">")
+		} else {
+
+			message.reply("Could not find channel #" + args[0])
+		}
+	}
+
+	fun onAddSrc(message: Message, args: Array<String>) {
+		val srcType = args[0]
+		val srcData = args[1]
+		try {
+			serverManagers[message.channelReceiver.server.id]!!.addSource(persistence, srcType, srcData)
+		} catch (e: Exception) {
+			message.reply("Could not add the source: " + e.message)
+		}
+	}
+
+	private fun getManager(server: Server) = serverManagers[server.id]!!
+
+}

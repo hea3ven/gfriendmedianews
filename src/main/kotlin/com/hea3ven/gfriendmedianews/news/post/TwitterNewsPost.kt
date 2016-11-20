@@ -1,7 +1,6 @@
 package com.hea3ven.gfriendmedianews.news.post
 
 import com.hea3ven.gfriendmedianews.news.source.NewsSource
-import com.hea3ven.gfriendmedianews.news.post.NewsPost
 import java.util.*
 
 class TwitterNewsPost(date: Date, userName: String, val rtUserName: String?, newsSrc: NewsSource, content: String) :

@@ -1,9 +1,60 @@
 package com.hea3ven.gfriendmedianews.news.source
 
-import com.hea3ven.gfriendmedianews.news.source.NewsSource
+import com.hea3ven.gfriendmedianews.Config
+import com.hea3ven.gfriendmedianews.domain.SourceConfig
+import com.hea3ven.gfriendmedianews.news.post.NewsPost
+import com.hea3ven.gfriendmedianews.news.post.TwitterNewsPost
+import com.hea3ven.gfriendmedianews.util.escapeLinks
+import twitter4j.Paging
+import twitter4j.Twitter
+import twitter4j.TwitterFactory
+import twitter4j.auth.AccessToken
 
-class TwitterNewsSource : NewsSource() {
+class TwitterNewsSource() : NewsSource() {
 	override val verb: String
 		get() = "tweeted"
 
+	override fun fetchNews(sourceConfig: SourceConfig): List<NewsPost> {
+		var lastId: Long
+		try {
+			lastId = sourceConfig.stateData.toLong()
+		} catch (e: NumberFormatException) {
+			lastId = twitter.timelines().getUserTimeline(sourceConfig.connectionData, Paging(1, 5)).last().id
+		}
+		val statuses = twitter.timelines().getUserTimeline(sourceConfig.connectionData, Paging(1, 5, lastId))
+		return statuses
+				.reversed()
+				.map {
+					val date = it.createdAt
+					var text = if (it.retweetedStatus == null) {
+						"https://twitter.com/" + it.user.screenName + "/status/" + it.id + "\n" + it.text
+					} else {
+						"https://twitter.com/" + it.user.screenName + "/status/" + it.id + "\n" + it.retweetedStatus.text
+					}
+					text = escapeLinks(text)
+					if (it.mediaEntities.isNotEmpty()) {
+						it.mediaEntities.forEach { text += "\n" + it.mediaURL }
+					} else {
+						if (it.urlEntities.isNotEmpty()) {
+							it.urlEntities.last()!!.apply { text += "\n" + this.url }
+						}
+					}
+					val userName = "@" + it.user.screenName
+					var rtUserName = it.retweetedStatus?.user?.screenName
+					if (rtUserName != null)
+						rtUserName = "@" + rtUserName
+					sourceConfig.stateData = it.id.toString()
+					TwitterNewsPost(date, userName, rtUserName, this, text)
+				}
+	}
+
+
+	companion object {
+		val twitter: Twitter = TwitterFactory.getSingleton()
+
+		init {
+			twitter.setOAuthConsumer(Config.twitterConsumerKey, Config.twitterConsumerSecret)
+			twitter.oAuthAccessToken = AccessToken(Config.twitterAccessToken, Config.twitterAccessSecret)
+		}
+	}
 }
