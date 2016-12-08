@@ -6,6 +6,7 @@ import com.hea3ven.gfriendmedianews.persistance.Persistence
 import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.entities.Channel
 import de.btobastian.javacord.entities.Server
+import de.btobastian.javacord.entities.User
 import de.btobastian.javacord.entities.message.Message
 import org.slf4j.LoggerFactory
 
@@ -73,9 +74,14 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	}
 
 	fun onStop(message: Message) {
+		if (message.author.discriminator != "5336" && message.author.discriminator != "9116") {
+			message.reply("You don't have permissions to do this")
+			return
+		}
 		logger.info("Sending stop signal")
 		message.reply("Goodbye!")
 		stop = true
+		System.exit(1)
 	}
 
 	fun onSlap(message: Message, args: Array<String>) {
@@ -84,6 +90,10 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	}
 
 	fun onSetChannel(message: Message, args: Array<String>) {
+		if (!isAdmin(message.channelReceiver.server, message.author)) {
+			message.reply("You don't have permissions to do this")
+			return
+		}
 		val channel: Channel?
 		if (args[0].startsWith("<#")) {
 			channel = message.channelReceiver.server.getChannelById(args[0].substring(2, args[0].length - 1))
@@ -100,6 +110,10 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	}
 
 	fun onAddSrc(message: Message, args: Array<String>) {
+		if (!isAdmin(message.channelReceiver.server, message.author)) {
+			message.reply("You don't have permissions to do this")
+			return
+		}
 		val srcType = args[0]
 		val srcData = args[1]
 		try {
@@ -107,6 +121,12 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 		} catch (e: Exception) {
 			message.reply("Could not add the source: " + e.message)
 		}
+	}
+
+	private fun isAdmin(server: Server, author: User): Boolean {
+		val botRolePos = discord.yourself.getRoles(server).filter { it.hoist }.map { it.position }.min()
+		val roles = author.getRoles(server)
+		return !(roles.isEmpty() || roles.all { it.position < botRolePos!! })
 	}
 
 	private fun getManager(server: Server) = serverManagers[server.id]!!
