@@ -19,11 +19,12 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	private var stop = false
 
 	private val commandManager = CommandManager.builder()
+			.addCommand("\$help", { message, args -> onHelp(message) })
 			.addCommand("\$info", { message, args -> onInfo(message) })
 			.addCommand("\$stop", { message, args -> onStop(message) })
 			.addCommand("\$slap", { message, args -> onSlap(message, args) })
 			.addCommand("\$setchannel", { message, args -> onSetChannel(message, args) })
-			.addCommand("\$addsrc", { message, args -> onAddSrc(message, args) })
+			.addCommand("\$addsource", { message, args -> onAddSrc(message, args) })
 			.build()
 
 	fun start() {
@@ -66,6 +67,28 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 
 	fun add(serverManager: ServerNewsManager) {
 		serverManagers.put(serverManager.serverConfig.serverId, serverManager)
+	}
+
+	fun onHelp(message: Message) {
+		val output = StringBuilder()
+		output.append("This is BuddyBot, by <@173217833168273408>.\n")
+		output.append(" The available commands are the following:\n")
+		output.append(" **\$help**: Show this help message.\n")
+		output.append(" **\$info**: Show the configuration and information of the current server.\n")
+		output.append(" **\$setchannel [channel]**: Sets the channel where the news will be posted.")
+		output.append(" This command requires administrator priviledges.\n")
+		output.append(" **\$addsource [type] [username]**: Adds a news source.")
+		output.append(" This command requires administrator priviledges.\n")
+		output.append("    **type** can be one of:\n")
+		output.append("        \\* twitter\n")
+		output.append("        \\* instagram\n")
+		output.append("        \\* youtube\n")
+		output.append("    examples:\n")
+		output.append("        \\* \$addsource twitter @GFRDOfficial\n")
+		output.append("        \\* \$addsource instagram gfriendofficial\n")
+		output.append("        \\* \$addsource youtube gfrdofficial\n")
+		output.append(" **\$slap [target]**: Slap the target.\n")
+		message.reply(output.toString())
 	}
 
 	private fun onInfo(message: Message) {
