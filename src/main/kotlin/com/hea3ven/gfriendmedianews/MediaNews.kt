@@ -23,6 +23,7 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 			.addCommand("\$info", { message, args -> onInfo(message) })
 			.addCommand("\$stop", { message, args -> onStop(message) })
 			.addCommand("\$slap", { message, args -> onSlap(message, args) })
+			.addCommand("\$rekt", { message, args -> onRekt(message) })
 			.addCommand("\$setchannel", { message, args -> onSetChannel(message, args) })
 			.addCommand("\$addsource", { message, args -> onAddSrc(message, args) })
 			.build()
@@ -88,6 +89,7 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 		output.append("        \\* \$addsource instagram gfriendofficial\n")
 		output.append("        \\* \$addsource youtube gfrdofficial\n")
 		output.append(" **\$slap [target]**: Slap the target.\n")
+		output.append(" **\$rekt**: Show rekt message.\n")
 		message.reply(output.toString())
 	}
 
@@ -146,6 +148,27 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 		}
 	}
 
+	fun onRekt(message: Message) {
+		val output = StringBuilder()
+		output.append("Current status:\n")
+		output.append(" ❎ Not **REKT**\n")
+		output.append(" :white_check_mark: **REKT**\n")
+		output.append(" :white_check_mark: **REKT**angle\n")
+		output.append(" :white_check_mark: Sh**REKT**\n")
+		output.append(" :white_check_mark: Tyrannosaurus **REKT**\n")
+		output.append(" :white_check_mark: Star T**REKT**\n")
+		output.append(" :white_check_mark: For**REKT** Gump\n")
+		output.append(" :white_check_mark: E**REKT**ile disfunction\n")
+		output.append(" :white_check_mark: Shipw**REKT**\n")
+		output.append(" :white_check_mark: Witness Prot**REKT**ion\n")
+		output.append(" :white_check_mark: Close Encounters of the **REKT** kind\n")
+		output.append(" :white_check_mark: Better Dead Than **REKT**\n")
+		output.append(" :white_check_mark: Resur**REKT**\n")
+		output.append(" :white_check_mark: Indi**REKT**\n")
+		output.append(" :white_check_mark: Caught **REKT**handed\n")
+		message.delete()
+		message.reply(output.toString())
+	}
 	private fun isAdmin(server: Server, author: User): Boolean {
 		val botRolePos = discord.yourself.getRoles(server).filter { it.hoist }.map { it.position }.min()
 		val roles = author.getRoles(server)
