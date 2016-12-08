@@ -18,16 +18,17 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.MediaNews")
 
 	fun fetchNews(persistence: Persistence, discord: DiscordAPI) {
+		val server = discord.getServerById(serverConfig.serverId)
 		if (serverConfig.targetChannel == null) {
-			logger.debug("The channel is not configured for the server {}", serverConfig.serverId)
+			logger.debug("The channel is not configured for the server {}", server.name)
 			return
 		}
-		val channel = discord.getChannelById(serverConfig.targetChannel)
+		val channel = server.getChannelById(serverConfig.targetChannel)
 		if (channel == null) {
-			logger.debug("The channel is not configured for the server {}", serverConfig.serverId)
+			logger.debug("The channel is not configured for the server {}", server.name)
 			return
 		}
-		logger.trace("Updating the news for the server {}", serverConfig.serverId)
+		logger.trace("Updating the news for the server {}", server.name)
 		persistence.beginTransaction().use { sess ->
 			serverConfig.sourceConfigs
 					.map {
