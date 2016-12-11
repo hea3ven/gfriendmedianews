@@ -19,6 +19,7 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 
 	fun fetchNews(persistence: Persistence, discord: DiscordAPI) {
 		val server = discord.getServerById(serverConfig.serverId)
+		// TODO: handle server no longer existing
 		if (serverConfig.targetChannel == null) {
 			logger.debug("The channel is not configured for the server {}", server.name)
 			return

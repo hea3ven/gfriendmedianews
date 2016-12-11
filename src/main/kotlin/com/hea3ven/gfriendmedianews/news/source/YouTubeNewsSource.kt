@@ -8,10 +8,14 @@ import com.google.api.services.youtube.YouTubeRequestInitializer
 import com.hea3ven.gfriendmedianews.Config
 import com.hea3ven.gfriendmedianews.domain.SourceConfig
 import com.hea3ven.gfriendmedianews.news.post.NewsPost
+import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.text.ParseException
 import java.util.*
 
 class YouTubeNewsSource : NewsSource() {
+	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.news.source.YouTubeNewsSource")
+
 	override val verb: String
 		get() = "posted to YouTube"
 
@@ -24,10 +28,15 @@ class YouTubeNewsSource : NewsSource() {
 		}
 		val channelsReq = youtube.channels().list("contentDetails")
 		channelsReq.forUsername = sourceConfig.connectionData
-//		channelsReq.forUsername = "gfrdofficial"
 		channelsReq.fields = "items/contentDetails"
 		channelsReq.maxResults = 5
-		val channels = channelsReq.execute().items
+		val channels = try {
+			channelsReq.execute().items
+		} catch (e: IOException) {
+			logger.warn("Could not read from youtube")
+			logger.trace("Error connecting to youtube", e)
+			return listOf()
+		}
 		val uploadsId = channels[0].contentDetails.relatedPlaylists.uploads
 		val playlistReq = youtube.playlistItems().list("snippet,contentDetails")
 		playlistReq.playlistId = uploadsId

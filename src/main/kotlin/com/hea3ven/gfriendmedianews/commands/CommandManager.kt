@@ -13,7 +13,7 @@ class CommandManager(val commands: Set<Command>) : MessageCreateListener {
 	}
 
 	override fun onMessageCreate(discord: DiscordAPI?, message: Message?) {
-		logger.debug("Received message")
+		logger.trace("Received message")
 		commands.filter { it.handle(message!!) }.forEach { return }
 	}
 
