@@ -20,7 +20,11 @@ class InstagramNewsSource : NewsSource() {
 	override val verb: String
 		get() = "posted to Instagram"
 
+	private var count = 0
+
 	override fun fetchNews(sourceConfig: SourceConfig): List<NewsPost> {
+		if (count++ < 5)
+			return listOf()
 		var lastDate: Date
 		try {
 			lastDate = Config.dateFmt.parse(sourceConfig.stateData)
@@ -31,7 +35,7 @@ class InstagramNewsSource : NewsSource() {
 			URL("https://www.instagram.com/" + sourceConfig.connectionData + "/media").openStream().use { stream ->
 				val posts = try {
 					JsonParser().parse(InputStreamReader(stream)).asJsonObject
-				} catch (e: MalformedJsonException) {
+				} catch (e: Exception) {
 					logger.warn("Could not read from instagram")
 					logger.trace("Error connecting to instagram", e)
 					return listOf()

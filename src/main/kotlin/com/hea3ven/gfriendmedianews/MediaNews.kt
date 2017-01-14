@@ -8,6 +8,8 @@ import de.btobastian.javacord.entities.Channel
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.User
 import de.btobastian.javacord.entities.message.Message
+import de.btobastian.javacord.listener.server.ServerJoinListener
+import de.btobastian.javacord.listener.server.ServerLeaveListener
 import org.slf4j.LoggerFactory
 
 class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
@@ -31,7 +33,7 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	fun start() {
 		logger.info("Connecting to discord")
 		discord.connectBlocking()
-		logger.info("Connecting established")
+		logger.info("Connection established")
 		onConnect()
 		while (!stop) {
 			logger.trace("Sleeping")
@@ -64,6 +66,16 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 			}
 		}
 		commandManager.init(discord)
+		discord.registerListener(object : ServerJoinListener, ServerLeaveListener {
+			override fun onServerJoin(api: DiscordAPI, server: Server) {
+				logger.info("Joined to {}", server.name)
+			}
+
+			override fun onServerLeave(api: DiscordAPI, server: Server) {
+				logger.info("Leaved to {}", server.name)
+			}
+
+		})
 	}
 
 	fun add(serverManager: ServerNewsManager) {
