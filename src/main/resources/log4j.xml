@@ -3,7 +3,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     <appender name="file" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="logs/gfriendmedianews.log"/>
-        <param name="MaxFileSize" value="20M"/>
+        <param name="MaxFileSize" value="20MB"/>
         <param name="MaxBackupIndex" value="5"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5p] %c - %m%n"/>
@@ -23,7 +23,6 @@
     <root>
         <priority value="info"/>
         <appender-ref ref="console"/>
-        <appender-ref ref="file"/>
+        <!--<appender-ref ref="file"/>-->
     </root>
-
 </log4j:configuration>
