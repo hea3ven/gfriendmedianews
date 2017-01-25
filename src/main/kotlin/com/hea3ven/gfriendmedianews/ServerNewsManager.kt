@@ -20,23 +20,19 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 	fun fetchNews(persistence: Persistence, discord: DiscordAPI) {
 		val server = discord.getServerById(serverConfig.serverId)
 		// TODO: handle server no longer existing
-		if (serverConfig.targetChannel == null) {
-			logger.debug("The channel is not configured for the server {}", server.name)
-			return
-		}
-		val channel = server.getChannelById(serverConfig.targetChannel)
-		if (channel == null) {
-			logger.debug("The channel is not configured for the server {}", server.name)
-			return
-		}
 		logger.trace("Updating the news for the server {}", server.name)
 		persistence.beginTransaction().use { sess ->
-			serverConfig.sourceConfigs
-					.map {
-						fetchNews(it, sess)
-					}
-					.reduce { result, news -> result.plus(news) }
-					.forEach { it.post(channel);Thread.sleep(2000) }
+			serverConfig.sourceConfigs.forEach { srcConfig ->
+				val channel = server.getChannelById(srcConfig.channel)
+				if (channel == null) {
+					logger.debug("The channel is not configured for the news source {}", srcConfig)
+					return
+				}
+				fetchNews(srcConfig, sess).forEach { news ->
+					news.post(channel);
+					Thread.sleep(2000)
+				}
+			}
 		}
 	}
 
@@ -51,17 +47,10 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 		}
 	}
 
-	fun setChannel(persistence: Persistence, channel: String) {
-		serverConfig.targetChannel = channel
-		persistence.beginTransaction().use { sess ->
-			sess.serverConfigDao.persist(serverConfig)
-		}
-	}
-
-	fun addSource(persistence: Persistence, srcType: String, srcData: String) {
+	fun addSource(persistence: Persistence, srcType: String, srcData: String, srcChannel: String) {
 		if (serverConfig.sourceConfigs.any { it.type == srcType && it.connectionData == srcData })
 			throw IllegalArgumentException("The source already exists")
-		val sourceConfig = SourceConfig(serverConfig, srcType, srcData)
+		val sourceConfig = SourceConfig(serverConfig, srcType, srcData, srcChannel)
 		getSource(sourceConfig)
 		serverConfig.sourceConfigs.add(sourceConfig)
 		persistence.beginTransaction().use { sess ->
@@ -71,18 +60,17 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 
 	fun showInfo(server: Server, message: Message) {
 		val output = StringBuilder()
-		output.append("News channel: " + getChannelDisplay(server) + "\n")
 		output.append("Sources:" + "\n")
 		serverConfig.sourceConfigs.forEach {
-			output.append("    - " + it.connectionData + " (" + it.type + ")\n")
+			val channel = getChannelDisplay(server,
+					it.channel)
+			output.append("    - " + it.connectionData + " (" + it.type + " |  " + channel + ")\n")
 		}
 		message.reply(output.toString())
 	}
 
-	fun getChannelDisplay(server: Server): String {
-		if (serverConfig.targetChannel == null)
-			return "not set"
-		val channel = server.getChannelById(serverConfig.targetChannel)
+	fun getChannelDisplay(server: Server, channelId: String): String {
+		val channel = server.getChannelById(channelId)
 		if (channel == null)
 			return "invalid"
 		else

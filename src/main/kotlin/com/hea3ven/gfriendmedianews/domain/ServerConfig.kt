@@ -14,14 +14,13 @@ class ServerConfig(
 		@GenericGenerator(name = "increment", strategy = "increment")
 		var id: Long,
 		var serverId: String,
-		var targetChannel: String?,
 		@OneToMany(mappedBy = "server", fetch = FetchType.EAGER, cascade = arrayOf(CascadeType.ALL))
 		var sourceConfigs: MutableList<SourceConfig>) {
 
-	constructor() : this(0, "", null, mutableListOf()) {
+	constructor() : this(0, "", mutableListOf()) {
 	}
 
-	constructor(serverId: String) : this(0, serverId, null, mutableListOf()) {
+	constructor(serverId: String) : this(0, serverId, mutableListOf()) {
 	}
 
 	companion object {

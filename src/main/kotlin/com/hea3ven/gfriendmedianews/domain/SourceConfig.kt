@@ -17,11 +17,11 @@ class SourceConfig(
 		@Column(name = "connection_data")
 		var connectionData: String,
 		@Column(name = "state_data")
-		var stateData: String) {
-	constructor() : this(0, ServerConfig(), "", "", "") {
-	}
+		var stateData: String,
+		@Column(name = "channel")
+		var channel: String) {
+	constructor() : this(0, ServerConfig(), "", "", "", "")
 
-	constructor(server: ServerConfig, sourceType: String, sourceData: String) :
-			this(0, server, sourceType, sourceData, "") {
-	}
+	constructor(server: ServerConfig, sourceType: String, sourceData: String, channel: String) :
+			this(0, server, sourceType, sourceData, "", channel)
 }
