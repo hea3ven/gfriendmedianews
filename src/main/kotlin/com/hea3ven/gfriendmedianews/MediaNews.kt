@@ -75,6 +75,7 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 			}
 
 		})
+		discord.setGame("with buddies (\$help)")
 	}
 
 	fun add(serverManager: ServerNewsManager) {
