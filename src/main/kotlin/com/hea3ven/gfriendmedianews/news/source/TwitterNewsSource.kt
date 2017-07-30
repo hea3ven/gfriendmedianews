@@ -27,8 +27,10 @@ class TwitterNewsSource() : NewsSource() {
 				lastId = twitter.timelines().getUserTimeline(sourceConfig.connectionData,
 						Paging(1, 5)).last().id
 			}
+			logger.debug("Getting tweets from " + sourceConfig.connectionData + " since tweet id " + lastId)
 			val statuses = twitter.timelines().getUserTimeline(sourceConfig.connectionData,
 					Paging(1, 5, lastId))
+			logger.trace("Got " + statuses.size + " tweets")
 			return statuses
 					.reversed()
 					.map {

@@ -1,5 +1,6 @@
 package com.hea3ven.gfriendmedianews
 
+import com.google.common.util.concurrent.FutureCallback
 import com.hea3ven.gfriendmedianews.commands.CommandManager
 import com.hea3ven.gfriendmedianews.domain.ServerConfig
 import com.hea3ven.gfriendmedianews.persistance.Persistence
@@ -11,6 +12,7 @@ import de.btobastian.javacord.entities.message.Message
 import de.btobastian.javacord.listener.server.ServerJoinListener
 import de.btobastian.javacord.listener.server.ServerLeaveListener
 import org.slf4j.LoggerFactory
+import kotlin.concurrent.thread
 
 class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 
@@ -31,23 +33,38 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 
 	fun start() {
 		logger.info("Connecting to discord")
-		discord.connectBlocking()
-		logger.info("Connection established")
-		onConnect()
+		discord.setAutoReconnect(false)
+		discord.connect(object : FutureCallback<DiscordAPI> {
+			override fun onSuccess(result: DiscordAPI?) {
+				logger.info("Connection established")
+				onConnect()
+				thread {
+					while (!stop) {
+						try {
+							logger.trace("Sleeping")
+							Thread.sleep(10000)
+							logger.trace("Fetching the news")
+							fetchNews()
+						} catch (e: Exception) {
+							logger.error("Unexpected error", e)
+						}
+					}
+				}
+			}
+
+			override fun onFailure(t: Throwable) {
+				logger.error("Could not connect", t)
+			}
+
+		})
 		while (!stop) {
-			logger.trace("Sleeping")
-			Thread.sleep(10000)
-			logger.trace("Fetching the news")
-			fetchNews()
+			Thread.sleep(5000)
 		}
-		Thread.sleep(5000)
-		logger.info("Disconnecting from discord")
-		discord.disconnect()
-		logger.info("Connection closed")
 	}
 
 	private fun fetchNews() {
 		for (serverManager in serverManagers.values) {
+			logger.trace("Fetching the news for the server " + serverManager.serverConfig.serverId)
 			serverManager.fetchNews(persistence, discord)
 		}
 	}
@@ -114,10 +131,11 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 			return
 		}
 		logger.info("Sending stop signal")
-		message.reply("Goodbye!")
-		Thread.sleep(1)
 		stop = true
-		System.exit(1)
+		message.reply("Goodbye!")
+		logger.info("Disconnecting from discord")
+		discord.disconnect()
+		logger.info("Connection closed")
 	}
 
 	fun onSlap(message: Message, args: Array<String>) {
@@ -153,6 +171,7 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 					srcChannel)
 			message.reply("Added the source successfully")
 		} catch (e: Exception) {
+			logger.error("Could not add the source", e)
 			message.reply("Could not add the source: " + e.message)
 		}
 	}
@@ -182,7 +201,7 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	private fun isAdmin(server: Server, author: User): Boolean {
 		val botRolePos = discord.yourself.getRoles(server).filter { it.hoist }.map { it.position }.min()
 		val roles = author.getRoles(server)
-		return !(roles.isEmpty() || roles.all { it.position < botRolePos!! })
+		return !(roles == null || roles.isEmpty() || roles.all { it.position < botRolePos!! })
 	}
 
 	private fun getManager(server: Server) = serverManagers[server.id]!!

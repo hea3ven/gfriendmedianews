@@ -6,7 +6,8 @@ import javax.persistence.*
 @Entity
 @Table(name = "server")
 @NamedQueries(
-		NamedQuery(name = ServerConfig.FIND_BY_SERVER_ID, query = "SELECT s FROM ServerConfig s")
+		NamedQuery(name = ServerConfig.FIND_BY_SERVER_ID,
+				query = "SELECT s FROM ServerConfig s WHERE s.serverId = :serverId")
 )
 class ServerConfig(
 		@Id

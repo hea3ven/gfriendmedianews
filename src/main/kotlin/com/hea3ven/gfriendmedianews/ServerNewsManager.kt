@@ -38,7 +38,9 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 
 	private fun fetchNews(it: SourceConfig, sess: PersistenceTransaction): List<NewsPost> {
 		try {
-			return getSource(it).fetchNews(it)
+			val news = getSource(it).fetchNews(it)
+			logger.debug("Found " + news.size + " new news for " + it.connectionData)
+			return news
 		} catch(e: Exception) {
 			logger.error("Could not fetch news", e)
 			return listOf()

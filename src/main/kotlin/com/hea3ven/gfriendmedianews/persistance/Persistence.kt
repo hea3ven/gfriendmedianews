@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory
 import org.hibernate.boot.MetadataSources
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder
 import java.io.Closeable
+import javax.persistence.TypedQuery
 
 
 class Persistence : Closeable {
@@ -48,8 +49,8 @@ abstract class AbstractDao<T>(val sess: Session) {
 
 	protected abstract fun getEntityClass(): Class<T>
 
-	protected fun find(queryName: String): T? {
-		val result = sess.createNamedQuery(queryName, getEntityClass()).resultList
+	protected fun find(queryName: String, queryBuilder: (TypedQuery<T>) -> TypedQuery<T>): T? {
+		val result = queryBuilder.invoke(sess.createNamedQuery(queryName, getEntityClass())).resultList
 		if (result.size != 1)
 			return null
 		return result[0]
@@ -63,7 +64,8 @@ abstract class AbstractDao<T>(val sess: Session) {
 class ServerConfigDao(sess: Session) : AbstractDao<ServerConfig>(sess) {
 	override fun getEntityClass() = ServerConfig::class.java
 
-	fun findByServerId(id: String) = find(ServerConfig.FIND_BY_SERVER_ID)
+	fun findByServerId(id: String) = find(ServerConfig.FIND_BY_SERVER_ID,
+			{ q -> q.setParameter("serverId", id) })
 }
 
 class SourceConfigDao(sess: Session) : AbstractDao<SourceConfig>(sess) {
