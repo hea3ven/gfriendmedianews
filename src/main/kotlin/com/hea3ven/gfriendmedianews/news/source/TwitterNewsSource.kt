@@ -16,7 +16,7 @@ class TwitterNewsSource() : NewsSource() {
 	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.news.source.TwitterNewsSource")
 
 	override val verb: String
-		get() = "tweeted"
+		get() = "Posted on twitter"
 
 	override fun fetchNews(sourceConfig: SourceConfig): List<NewsPost> {
 		try {
@@ -35,25 +35,31 @@ class TwitterNewsSource() : NewsSource() {
 					.reversed()
 					.map {
 						val date = it.createdAt
-						var text = if (it.retweetedStatus == null) {
-							"https://twitter.com/" + it.user.screenName + "/status/" + it.id + "\n" + it.text
+						val url = if (it.retweetedStatus == null) {
+							"https://twitter.com/" + it.user.screenName + "/status/" + it.id
 						} else {
-							"https://twitter.com/" + it.user.screenName + "/status/" + it.id + "\n" + it.retweetedStatus.text
+							"https://twitter.com/" + it.user.screenName + "/status/" + it.id
 						}
-						text = escapeLinks(text)
-						if (it.mediaEntities.isNotEmpty()) {
-							it.mediaEntities.forEach { text += "\n" + it.mediaURL }
+						var text = if (it.retweetedStatus == null) {
+							it.text
 						} else {
-							if (it.urlEntities.isNotEmpty()) {
-								it.urlEntities.last()!!.apply { text += "\n" + this.url }
-							}
+							it.retweetedStatus.text
+						}
+//						text = escapeLinks(text)
+						val mediaUrls = if (it.mediaEntities.isNotEmpty()) {
+							it.mediaEntities.map { it.mediaURL }
+						} else if (it.urlEntities.isNotEmpty()) {
+							listOf(it.urlEntities.last()!!.url)
+						} else {
+							listOf()
 						}
 						val userName = "@" + it.user.screenName
 						var rtUserName = it.retweetedStatus?.user?.screenName
 						if (rtUserName != null)
 							rtUserName = "@" + rtUserName
 						sourceConfig.stateData = it.id.toString()
-						TwitterNewsPost(date, userName, rtUserName, this, text)
+						TwitterNewsPost(date, userName, it.user.url, it.user.miniProfileImageURL, rtUserName,
+								this, url, text, mediaUrls)
 					}
 		} catch (e: TwitterException) {
 			logger.warn("Could not read from twitter")

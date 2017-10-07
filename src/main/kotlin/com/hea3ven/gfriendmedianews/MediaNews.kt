@@ -9,6 +9,7 @@ import de.btobastian.javacord.entities.Channel
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.User
 import de.btobastian.javacord.entities.message.Message
+import de.btobastian.javacord.entities.message.embed.EmbedBuilder
 import de.btobastian.javacord.listener.server.ServerJoinListener
 import de.btobastian.javacord.listener.server.ServerLeaveListener
 import org.slf4j.LoggerFactory
@@ -23,12 +24,12 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	private var stop = false
 
 	private val commandManager = CommandManager.builder()
-			.addCommand("\$help", { message, args -> onHelp(message) })
-			.addCommand("\$info", { message, args -> onInfo(message) })
-			.addCommand("\$stop", { message, args -> onStop(message) })
-			.addCommand("\$slap", { message, args -> onSlap(message, args) })
-			.addCommand("\$rekt", { message, args -> onRekt(message) })
-			.addCommand("\$addsource", { message, args -> onAddSrc(message, args) })
+			.addCommand("\$help", { message, _ -> onHelp(message) })
+			.addCommand("\$info", { message, _ -> onInfo(message) })
+			.addCommand("\$stop", { message, _ -> onStop(message) })
+			.addCommand("\$slap", this::onSlap)
+			.addCommand("\$rekt", { message, _ -> onRekt(message) })
+			.addCommand("\$addsource", this::onAddSrc)
 			.build()
 
 	fun start() {

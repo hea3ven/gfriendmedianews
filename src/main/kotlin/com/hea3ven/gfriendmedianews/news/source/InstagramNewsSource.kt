@@ -7,6 +7,7 @@ import com.hea3ven.gfriendmedianews.domain.SourceConfig
 import com.hea3ven.gfriendmedianews.news.post.NewsPost
 import com.hea3ven.gfriendmedianews.util.escapeLinks
 import org.slf4j.LoggerFactory
+import java.awt.Color
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
@@ -47,9 +48,14 @@ class InstagramNewsSource : NewsSource() {
 
 							val date = Date(caption.get("created_time").asLong * 1000)
 							val userName = "@" + caption.getAsJsonObject("from").get("username").asString
+							val userUrl = "https://www.instagram.com/" + caption.getAsJsonObject("from").get(
+									"username").asString
+							val userIcon = caption.getAsJsonObject("from").get("profile_picture").asString
+							val url = post.asJsonObject.get("link").asString
 							val picUrl = img.getAsJsonObject("standard_resolution").get("url").asString
-							val text = escapeLinks(caption.get("text").asString) + "\n" + picUrl
-							NewsPost(date, userName, this, text)
+							val text = escapeLinks(caption.get("text").asString)
+							NewsPost(Color(205, 72, 107), date, userName, userUrl, userIcon, this, url,
+									text, listOf(picUrl))
 						}
 						.sortedBy { it.date.time }
 						.filter { it.date.after(lastDate) }

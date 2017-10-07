@@ -9,6 +9,7 @@ import com.hea3ven.gfriendmedianews.Config
 import com.hea3ven.gfriendmedianews.domain.SourceConfig
 import com.hea3ven.gfriendmedianews.news.post.NewsPost
 import org.slf4j.LoggerFactory
+import java.awt.Color
 import java.io.IOException
 import java.text.ParseException
 import java.util.*
@@ -43,10 +44,15 @@ class YouTubeNewsSource : NewsSource() {
 		val playlistItems = playlistReq.execute().items
 		val result = playlistItems
 				.map {
-					val text = "https://youtube.com/watch?v=" + it.contentDetails.videoId
+					val url = "https://youtube.com/watch?v=" + it.contentDetails.videoId
+					val thumbnailUrl = it.snippet.thumbnails.standard.url
+					val text = it.snippet.title
 					val date = Date(it.snippet.publishedAt.value)
 					val userName = it.snippet.channelTitle
-					NewsPost(date, userName, this, text)
+					val userUrl = "http://www.youtube.com/channel/" + it.snippet.channelId
+					val userIcon = "http://i.ytimg.com/i/" + it.snippet.channelId + "/1.jpg"
+					NewsPost(Color(255, 0, 0), date, userName, userUrl, userIcon, this, url, text,
+							listOf(thumbnailUrl))
 				}
 				.sortedBy { it.date.time }
 				.filter { it.date.after(lastDate) }
