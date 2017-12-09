@@ -3,13 +3,13 @@ package com.hea3ven.gfriendmedianews
 import com.google.common.util.concurrent.FutureCallback
 import com.hea3ven.gfriendmedianews.commands.CommandManager
 import com.hea3ven.gfriendmedianews.domain.ServerConfig
+import com.hea3ven.gfriendmedianews.domain.SlapStat
 import com.hea3ven.gfriendmedianews.persistance.Persistence
 import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.entities.Channel
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.User
 import de.btobastian.javacord.entities.message.Message
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder
 import de.btobastian.javacord.listener.server.ServerJoinListener
 import de.btobastian.javacord.listener.server.ServerLeaveListener
 import org.slf4j.LoggerFactory
@@ -24,12 +24,12 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 	private var stop = false
 
 	private val commandManager = CommandManager.builder()
-			.addCommand("\$help", { message, _ -> onHelp(message) })
-			.addCommand("\$info", { message, _ -> onInfo(message) })
-			.addCommand("\$stop", { message, _ -> onStop(message) })
-			.addCommand("\$slap", this::onSlap)
-			.addCommand("\$rekt", { message, _ -> onRekt(message) })
-			.addCommand("\$addsource", this::onAddSrc)
+			.addCommand("\$help", { message, args -> onHelp(message) })
+			.addCommand("\$info", { message, args -> onInfo(message) })
+			.addCommand("\$stop", { message, args -> onStop(message) })
+			.addCommand("\$slap", { message, args -> onSlap(message, args) })
+			.addCommand("\$rekt", { message, args -> onRekt(message) })
+			.addCommand("\$addsource", { message, args -> onAddSrc(message, args) })
 			.build()
 
 	fun start() {
@@ -141,7 +141,32 @@ class MediaNews(val persistence: Persistence, val discord: DiscordAPI) {
 
 	fun onSlap(message: Message, args: Array<String>) {
 		message.delete()
+		val slapper = message.author.id
+		val slappees = parseSlapees(args)
 		message.reply(message.author.mentionTag + " slapped " + args.joinToString())
+		persistence.beginTransaction().use { tx ->
+			slappees.forEach {
+				val slapStat = tx.slapStatDao.find(slapper, it) ?: SlapStat(slapper, it)
+				if (slapStat != null) {
+					slapStat.count += 1
+					tx.slapStatDao.persist(slapStat)
+				}
+			}
+		}
+	}
+
+	private fun parseSlapees(args: Array<String>) = args.mapNotNull {
+		if (it.startsWith("<@") && it.endsWith(">")) it.substring(2, it.length - 2) else null
+	}
+
+	fun onSlapStat(message: Message, args: Array<String>) {
+		persistence.beginTransaction().use { tx ->
+			val slapper = message.author.id
+			val slapperTimes = tx.slapStatDao.countTimesSlapper(slapper)
+			val slappeeTimes = tx.slapStatDao.countTimesSlappee(slapper)
+			message.reply("You've slapped $slapperTimes times")
+			message.reply("You've been slapped $slappeeTimes times")
+		}
 	}
 
 	fun onAddSrc(message: Message, args: Array<String>) {
