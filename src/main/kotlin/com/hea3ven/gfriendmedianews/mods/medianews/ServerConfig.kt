@@ -1,4 +1,4 @@
-package com.hea3ven.gfriendmedianews.domain
+package com.hea3ven.gfriendmedianews.mods.medianews
 
 import org.hibernate.annotations.GenericGenerator
 import javax.persistence.*

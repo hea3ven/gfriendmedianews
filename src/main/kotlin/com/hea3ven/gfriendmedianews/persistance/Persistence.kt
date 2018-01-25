@@ -1,8 +1,5 @@
 package com.hea3ven.gfriendmedianews.persistance
 
-import com.hea3ven.gfriendmedianews.domain.ServerConfig
-import com.hea3ven.gfriendmedianews.domain.SlapStat
-import com.hea3ven.gfriendmedianews.domain.SourceConfig
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.boot.MetadataSources
@@ -16,25 +13,39 @@ import javax.persistence.criteria.CriteriaQuery
 class Persistence : Closeable {
 	private val sessionFactory: SessionFactory
 
+	private val daoFactories: MutableMap<Class<*>, DaoFactory<*>> = mutableMapOf()
+
 	init {
 		val registry = StandardServiceRegistryBuilder().configure().build()
 		try {
 			sessionFactory = MetadataSources(registry).buildMetadata().buildSessionFactory()
-		} catch (e: Exception) {
+		} catch (e: Throwable) {
 			StandardServiceRegistryBuilder.destroy(registry)
 			throw RuntimeException(e)
 		}
+	}
+
+	fun registerDaoFactory(daoClass:Class<*>, daoFactory: DaoFactory<*>){
+		daoFactories.put(daoClass, daoFactory)
+	}
+
+	fun <R> getDaoFactory(daoClass: Class<R>): DaoFactory<R> {
+		return daoFactories[daoClass] as DaoFactory<R>
 	}
 
 	override fun close() {
 		sessionFactory.close()
 	}
 
-	fun beginTransaction() = PersistenceTransaction(sessionFactory.openSession())
+	fun beginTransaction() = PersistenceTransaction(this, sessionFactory.openSession())
 
 }
 
-class PersistenceTransaction(val sess: Session) : Closeable {
+interface DaoFactory<T> {
+	fun create(sess: Session): T
+}
+
+class PersistenceTransaction(val persistence: Persistence, val sess: Session) : Closeable {
 	init {
 		sess.beginTransaction()
 	}
@@ -44,9 +55,10 @@ class PersistenceTransaction(val sess: Session) : Closeable {
 		sess.close()
 	}
 
-	val serverConfigDao: ServerConfigDao = ServerConfigDao(sess)
-	val sourceConfigDao: SourceConfigDao = SourceConfigDao(sess)
-	val slapStatDao: SlapStatDao = SlapStatDao(sess)
+	fun <T, R : AbstractDao<T>> getDao(daoClass :Class<R>): R {
+		return persistence.getDaoFactory(daoClass).create(sess)
+	}
+
 }
 
 abstract class AbstractDao<T>(val sess: Session) {
@@ -78,45 +90,3 @@ abstract class AbstractDao<T>(val sess: Session) {
 	}
 }
 
-class ServerConfigDao(sess: Session) : AbstractDao<ServerConfig>(sess) {
-	override fun getEntityClass() = ServerConfig::class.java
-
-	fun findByServerId(id: String): ServerConfig? {
-		val crit = createCrit()
-		val servConf = crit.from(ServerConfig::class.java)
-		crit.where(cb.equal(servConf.get<String>("serverId"), id))
-		return find(crit)
-	}
-}
-
-class SourceConfigDao(sess: Session) : AbstractDao<SourceConfig>(sess) {
-	override fun getEntityClass() = SourceConfig::class.java
-}
-
-class SlapStatDao(sess: Session) : AbstractDao<SlapStat>(sess) {
-	override fun getEntityClass() = SlapStat::class.java
-
-	fun find(slapperId: String?, slappeeId: String): SlapStat? {
-		val crit = createCrit()
-		val slapStat = crit.from(SlapStat::class.java)
-		crit.where(cb.and(cb.equal(slapStat.get<String>("slapperId"), slapperId),
-				cb.equal(slapStat.get<String>("slappeeId"), slappeeId)))
-		return find(crit)
-	}
-
-	fun countTimesSlapper(slapperId: String): Int? {
-		val crit = createCrit(Int::class.java)
-		val slapStat = crit.from(SlapStat::class.java)
-		crit.select(cb.sum(slapStat.get<Int>("count")))
-		crit.where(cb.equal(slapStat.get<String>("slapperId"), slapperId))
-		return find(crit)
-	}
-
-	fun countTimesSlappee(slappeeId: String?): Int? {
-		val crit = createCrit(Int::class.java)
-		val slapStat = crit.from(SlapStat::class.java)
-		crit.select(cb.sum(slapStat.get<Int>("count")))
-		crit.where(cb.equal(slapStat.get<String>("slappeeId"), slappeeId))
-		return find(crit)
-	}
-}

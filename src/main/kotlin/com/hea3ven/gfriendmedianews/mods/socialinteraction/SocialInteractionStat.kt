@@ -1,4 +1,4 @@
-package com.hea3ven.gfriendmedianews.domain
+package com.hea3ven.gfriendmedianews.mods.socialinteraction
 
 import org.hibernate.annotations.GenericGenerator
 import javax.persistence.Entity
@@ -7,8 +7,8 @@ import javax.persistence.Id
 import javax.persistence.Table
 
 @Entity
-@Table(name = "slap_stat")
-class SlapStat(
+@Table(name = "social_interaction_stat")
+class SocialInteractionStat(
 		@Id
 		@GeneratedValue(generator = "increment")
 		@GenericGenerator(name = "increment", strategy = "increment")

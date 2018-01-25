@@ -9,10 +9,10 @@ fun main(args: Array<String>) {
 	try {
 		Persistence().use { persistence ->
 			val api = Javacord.getApi(Config.discordApiToken, true)
-			val mediaNews = MediaNews(persistence, api)
+			val mediaNews = ChinguBot(persistence, api)
 			mediaNews.start()
 		}
-	} catch (e: Exception) {
+	} catch (e: Throwable) {
 		logger.error("Unhandled exception", e)
 	} finally {
 		System.exit(0)

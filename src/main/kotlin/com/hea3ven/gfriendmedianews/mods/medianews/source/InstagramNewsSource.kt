@@ -1,10 +1,9 @@
-package com.hea3ven.gfriendmedianews.news.source
+package com.hea3ven.gfriendmedianews.mods.medianews.source
 
 import com.google.gson.JsonParser
-import com.google.gson.stream.MalformedJsonException
 import com.hea3ven.gfriendmedianews.Config
-import com.hea3ven.gfriendmedianews.domain.SourceConfig
-import com.hea3ven.gfriendmedianews.news.post.NewsPost
+import com.hea3ven.gfriendmedianews.mods.medianews.SourceConfig
+import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
 import com.hea3ven.gfriendmedianews.util.escapeLinks
 import org.slf4j.LoggerFactory
 import java.awt.Color
@@ -16,7 +15,7 @@ import java.util.*
 
 class InstagramNewsSource : NewsSource() {
 	private val logger = LoggerFactory.getLogger(
-			"com.hea3ven.gfriendmedianews.news.source.InstagramNewsSource")
+			"com.hea3ven.gfriendmedianews.mods.medianews.source.InstagramNewsSource")
 
 	override val verb: String
 		get() = "posted to Instagram"

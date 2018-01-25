@@ -10,8 +10,8 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.showsql">true </property>
 
-        <mapping class="com.hea3ven.gfriendmedianews.domain.ServerConfig"/>
-        <mapping class="com.hea3ven.gfriendmedianews.domain.SourceConfig"/>
+        <mapping class="com.hea3ven.gfriendmedianews.mods.medianews.ServerConfig"/>
+        <mapping class="com.hea3ven.gfriendmedianews.mods.medianews.SourceConfig"/>
 
     </session-factory>
 </hibernate-configuration>

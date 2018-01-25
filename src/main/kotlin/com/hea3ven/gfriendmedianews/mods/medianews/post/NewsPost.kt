@@ -1,7 +1,7 @@
-package com.hea3ven.gfriendmedianews.news.post
+package com.hea3ven.gfriendmedianews.mods.medianews.post
 
 import com.hea3ven.gfriendmedianews.Config
-import com.hea3ven.gfriendmedianews.news.source.NewsSource
+import com.hea3ven.gfriendmedianews.mods.medianews.source.NewsSource
 import de.btobastian.javacord.entities.Channel
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder
 import java.awt.Color
@@ -12,7 +12,7 @@ open class NewsPost(val color: Color, val date: Date, val userName: String, val 
 
 	fun post(channel: Channel) {
 		val dateStr = Config.dateFmt.format(date)
-		var embed = EmbedBuilder()
+		val embed = EmbedBuilder()
 				.setColor(color)
 				.setAuthor(userName, userUrl, userIcon)
 				.setTitle(userAction())

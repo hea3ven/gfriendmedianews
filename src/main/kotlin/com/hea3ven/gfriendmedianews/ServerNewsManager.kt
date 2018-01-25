@@ -1,11 +1,13 @@
 package com.hea3ven.gfriendmedianews
 
-import com.hea3ven.gfriendmedianews.domain.ServerConfig
-import com.hea3ven.gfriendmedianews.domain.SourceConfig
-import com.hea3ven.gfriendmedianews.news.post.NewsPost
-import com.hea3ven.gfriendmedianews.news.source.InstagramNewsSource
-import com.hea3ven.gfriendmedianews.news.source.TwitterNewsSource
-import com.hea3ven.gfriendmedianews.news.source.YouTubeNewsSource
+import com.hea3ven.gfriendmedianews.mods.medianews.ServerConfig
+import com.hea3ven.gfriendmedianews.mods.medianews.SourceConfig
+import com.hea3ven.gfriendmedianews.mods.medianews.ServerConfigDao
+import com.hea3ven.gfriendmedianews.mods.medianews.SourceConfigDao
+import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
+import com.hea3ven.gfriendmedianews.mods.medianews.source.InstagramNewsSource
+import com.hea3ven.gfriendmedianews.mods.medianews.source.TwitterNewsSource
+import com.hea3ven.gfriendmedianews.mods.medianews.source.YouTubeNewsSource
 import com.hea3ven.gfriendmedianews.persistance.Persistence
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
 import de.btobastian.javacord.DiscordAPI
@@ -15,7 +17,7 @@ import org.slf4j.LoggerFactory
 
 class ServerNewsManager(val serverConfig: ServerConfig) {
 
-	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.MediaNews")
+	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.ChinguBot")
 
 	fun fetchNews(persistence: Persistence, discord: DiscordAPI) {
 		val server = discord.getServerById(serverConfig.serverId)
@@ -29,7 +31,7 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 					return
 				}
 				fetchNews(srcConfig, sess).forEach { news ->
-					news.post(channel);
+					news.post(channel)
 					Thread.sleep(2000)
 				}
 			}
@@ -41,22 +43,23 @@ class ServerNewsManager(val serverConfig: ServerConfig) {
 			val news = getSource(it).fetchNews(it)
 			logger.debug("Found " + news.size + " new news for " + it.connectionData)
 			return news
-		} catch(e: Exception) {
+		} catch (e: Exception) {
 			logger.error("Could not fetch news", e)
 			return listOf()
 		} finally {
-			sess.sourceConfigDao.persist(it)
+			sess.getDao(SourceConfigDao::class.java).persist(it)
 		}
 	}
 
 	fun addSource(persistence: Persistence, srcType: String, srcData: String, srcChannel: String) {
 		if (serverConfig.sourceConfigs.any { it.type == srcType && it.connectionData == srcData })
 			throw IllegalArgumentException("The source already exists")
-		val sourceConfig = SourceConfig(serverConfig, srcType, srcData, srcChannel)
+		val sourceConfig = SourceConfig(serverConfig, srcType, srcData,
+				srcChannel)
 		getSource(sourceConfig)
 		serverConfig.sourceConfigs.add(sourceConfig)
 		persistence.beginTransaction().use { sess ->
-			sess.serverConfigDao.persist(serverConfig)
+			sess.getDao(ServerConfigDao::class.java).persist(serverConfig)
 		}
 	}
 

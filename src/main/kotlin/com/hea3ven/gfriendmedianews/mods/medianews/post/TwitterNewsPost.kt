@@ -1,6 +1,6 @@
-package com.hea3ven.gfriendmedianews.news.post
+package com.hea3ven.gfriendmedianews.mods.medianews.post
 
-import com.hea3ven.gfriendmedianews.news.source.NewsSource
+import com.hea3ven.gfriendmedianews.mods.medianews.source.NewsSource
 import java.awt.Color
 import java.util.*
 

@@ -1,4 +1,4 @@
-package com.hea3ven.gfriendmedianews.news.source
+package com.hea3ven.gfriendmedianews.mods.medianews.source
 
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -6,8 +6,8 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.YouTubeRequestInitializer
 import com.hea3ven.gfriendmedianews.Config
-import com.hea3ven.gfriendmedianews.domain.SourceConfig
-import com.hea3ven.gfriendmedianews.news.post.NewsPost
+import com.hea3ven.gfriendmedianews.mods.medianews.SourceConfig
+import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
@@ -15,7 +15,7 @@ import java.text.ParseException
 import java.util.*
 
 class YouTubeNewsSource : NewsSource() {
-	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.news.source.YouTubeNewsSource")
+	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.mods.medianews.source.YouTubeNewsSource")
 
 	override val verb: String
 		get() = "posted to YouTube"

@@ -1,10 +1,9 @@
-package com.hea3ven.gfriendmedianews.news.source
+package com.hea3ven.gfriendmedianews.mods.medianews.source
 
 import com.hea3ven.gfriendmedianews.Config
-import com.hea3ven.gfriendmedianews.domain.SourceConfig
-import com.hea3ven.gfriendmedianews.news.post.NewsPost
-import com.hea3ven.gfriendmedianews.news.post.TwitterNewsPost
-import com.hea3ven.gfriendmedianews.util.escapeLinks
+import com.hea3ven.gfriendmedianews.mods.medianews.SourceConfig
+import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
+import com.hea3ven.gfriendmedianews.mods.medianews.post.TwitterNewsPost
 import org.slf4j.LoggerFactory
 import twitter4j.Paging
 import twitter4j.Twitter
@@ -13,7 +12,7 @@ import twitter4j.TwitterFactory
 import twitter4j.auth.AccessToken
 
 class TwitterNewsSource() : NewsSource() {
-	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.news.source.TwitterNewsSource")
+	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.mods.medianews.source.TwitterNewsSource")
 
 	override val verb: String
 		get() = "Posted on twitter"
@@ -40,7 +39,7 @@ class TwitterNewsSource() : NewsSource() {
 						} else {
 							"https://twitter.com/" + it.user.screenName + "/status/" + it.id
 						}
-						var text = if (it.retweetedStatus == null) {
+						val text = if (it.retweetedStatus == null) {
 							it.text
 						} else {
 							it.retweetedStatus.text
