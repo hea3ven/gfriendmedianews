@@ -11,7 +11,7 @@ import twitter4j.TwitterException
 import twitter4j.TwitterFactory
 import twitter4j.auth.AccessToken
 
-class TwitterNewsSource() : NewsSource() {
+class TwitterNewsSource : NewsSource() {
 	private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.mods.medianews.source.TwitterNewsSource")
 
 	override val verb: String

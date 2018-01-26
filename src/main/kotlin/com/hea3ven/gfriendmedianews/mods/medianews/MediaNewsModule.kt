@@ -3,10 +3,8 @@ package com.hea3ven.gfriendmedianews.mods.medianews
 import com.hea3ven.gfriendmedianews.ChinguBot
 import com.hea3ven.gfriendmedianews.ServerNewsManager
 import com.hea3ven.gfriendmedianews.commands.ActionCommand
-import com.hea3ven.gfriendmedianews.commands.LegacyCommand
 import com.hea3ven.gfriendmedianews.mods.Module
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
-import com.hea3ven.gfriendmedianews.util.isAdmin
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.message.Message
 import org.slf4j.LoggerFactory
@@ -14,15 +12,26 @@ import kotlin.concurrent.thread
 
 class MediaNewsModule(val bot: ChinguBot) : Module {
 
-	init{
+	init {
 		bot.persistence.registerDaoFactory(SourceConfigDao::class.java, SourceConfigDaoFactory())
 		bot.persistence.registerDaoFactory(ServerConfigDao::class.java, ServerConfigDaoFactory())
 	}
 
 	private val logger = LoggerFactory.getLogger(MediaNewsModule::class.java)
 
-	override val commands = listOf(LegacyCommand("addsource", this::onAddSrc),
-			ActionCommand("info", this::onInfo))
+	override val commands = listOf(
+			ActionCommand("addsource", " **\$addsource [channel] [type] [username]**: Adds a news source.\n"
+					+ "    **type** can be one of:\n"
+					+ "        \\* twitter\n"
+					+ "        \\* instagram\n"
+					+ "        \\* youtube\n"
+					+ "    examples:\n"
+					+ "        \\* \$addsource #official_media twitter @GFRDOfficial\n"
+					+ "        \\* \$addsource #official_media instagram gfriendofficial\n"
+					+ "        \\* \$addsource #official_media youtube gfrdofficial", this::onAddSrc, true),
+			ActionCommand("mediainfo",
+					" **\$info**: Show the configuration and information of the media in the current server.",
+					this::onInfo))
 
 	private val serverManagers = mutableMapOf<String, ServerNewsManager>()
 
@@ -60,17 +69,14 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
 	}
 
 	fun add(serverManager: ServerNewsManager) {
-		serverManagers.put(serverManager.serverConfig.serverId, serverManager)
+		serverManagers[serverManager.serverConfig.serverId] = serverManager
 	}
 
-	fun onAddSrc(message: Message, args: Array<String>) {
-		if (!message.channelReceiver.server.isAdmin(bot, message.author)) {
-			message.reply("You don't have permissions to do this")
-			return
-		}
-		var srcChannel: String? = args[0]
-		val srcType = args[1]
-		val srcData = args[2]
+	fun onAddSrc(message: Message, args: String?) {
+		val splitArgs = args?.split(" ")?.toTypedArray() ?: arrayOf()
+		var srcChannel: String? = splitArgs[0]
+		val srcType = splitArgs[1]
+		val srcData = splitArgs[2]
 
 		if (srcChannel!!.startsWith("<#")) {
 			srcChannel = message.channelReceiver.server.getChannelById(
@@ -83,7 +89,7 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
 					?.id
 		}
 		if (srcChannel == null) {
-			message.reply("Could not add the source: could not find the channel " + args[0])
+			message.reply("Could not add the source: could not find the channel " + splitArgs[0])
 			return
 		}
 		try {

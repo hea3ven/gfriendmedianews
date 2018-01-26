@@ -6,10 +6,14 @@ import com.hea3ven.gfriendmedianews.persistance.Persistence
 import de.btobastian.javacord.entities.message.Message
 
 class SocialInteractionsModule(private val persistence: Persistence) : Module {
-	override val commands = listOf(ActionCommand("slap", { m, a -> onInteraction(m, a, InteractionType.SLAP) }),
-			ActionCommand("slapstat", { m, a -> onInteractionStat(m, a, InteractionType.SLAP) }),
-			ActionCommand("hug", { m, a -> onInteraction(m, a, InteractionType.HUG) }),
-			ActionCommand("hugstat", { m, a -> onInteractionStat(m, a, InteractionType.HUG) }))
+	override val commands = listOf(ActionCommand("slap", " **\$slap [target]**: Slap the target.",
+			{ m, a -> onInteraction(m, a, InteractionType.SLAP) }),
+			ActionCommand("slapstat", " **\$slapstat**: Show statistics of your slaps.",
+					{ m, a -> onInteractionStat(m, a, InteractionType.SLAP) }),
+			ActionCommand("hug", " **\$hug [target]**: Hug the target.",
+					{ m, a -> onInteraction(m, a, InteractionType.HUG) }),
+			ActionCommand("hugstat", " **\$hugstat**: Show statistics of your hugs.",
+					{ m, a -> onInteractionStat(m, a, InteractionType.HUG) }))
 
 	init {
 

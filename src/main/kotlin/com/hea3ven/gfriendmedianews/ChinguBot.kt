@@ -1,6 +1,5 @@
 package com.hea3ven.gfriendmedianews
 
-import com.hea3ven.gfriendmedianews.mods.Module
 import com.hea3ven.gfriendmedianews.mods.main.MainModule
 import com.hea3ven.gfriendmedianews.mods.medianews.MediaNewsModule
 import com.hea3ven.gfriendmedianews.mods.misc.MiscModule
@@ -11,7 +10,7 @@ import de.btobastian.javacord.DiscordAPI
 
 class ChinguBot(persistence: Persistence, discord: DiscordAPI) : DiscordBot(persistence, discord) {
 
-	override val modules = listOf<Module>(MainModule(this), MiscModule(), SocialInteractionsModule(persistence),
+	override val modules = listOf(MainModule(this), MiscModule(), SocialInteractionsModule(persistence),
 			MediaNewsModule(this))
 
 }

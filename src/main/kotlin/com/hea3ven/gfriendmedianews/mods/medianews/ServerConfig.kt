@@ -11,7 +11,7 @@ class ServerConfig(
 		@GenericGenerator(name = "increment", strategy = "increment")
 		var id: Long,
 		var serverId: String,
-		@OneToMany(mappedBy = "server", fetch = FetchType.EAGER, cascade = arrayOf(CascadeType.ALL))
+		@OneToMany(mappedBy = "server", fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
 		var sourceConfigs: MutableList<SourceConfig>) {
 
 	constructor() : this(0, "", mutableListOf())

@@ -1,6 +1,6 @@
 package com.hea3ven.gfriendmedianews.util
 
-import com.hea3ven.gfriendmedianews.ChinguBot
+import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.User
 
@@ -10,8 +10,8 @@ fun  escapeLinks(text: String): String {
 	return urlRegex.replace(text,"<$0>")
 }
 
-fun Server.isAdmin(bot: ChinguBot, user: User): Boolean {
-	val botRolePos = bot.discord.yourself.getRoles(this).filter { it.hoist }.map { it.position }.min()
+fun Server.isAdmin(discord: DiscordAPI, user: User): Boolean {
+	val botRolePos = discord.yourself.getRoles(this).filter { it.hoist }.map { it.position }.min()
 	val roles = user.getRoles(this)
 	return !(roles == null || roles.isEmpty() || roles.all { it.position < botRolePos!! })
 }

@@ -26,7 +26,7 @@ class Persistence : Closeable {
 	}
 
 	fun registerDaoFactory(daoClass:Class<*>, daoFactory: DaoFactory<*>){
-		daoFactories.put(daoClass, daoFactory)
+		daoFactories[daoClass] = daoFactory
 	}
 
 	fun <R> getDaoFactory(daoClass: Class<R>): DaoFactory<R> {
@@ -41,7 +41,7 @@ class Persistence : Closeable {
 
 }
 
-interface DaoFactory<T> {
+interface DaoFactory<out T> {
 	fun create(sess: Session): T
 }
 

@@ -22,6 +22,6 @@ class SocialInteractionStat(
 	constructor(type: InteractionType, sourceId: String, targetId: String) : this(0, type, sourceId, targetId, Date())
 }
 
-enum class InteractionType(val verb: kotlin.String) {
+enum class InteractionType(val verb: String) {
 	SLAP("slapped"), HUG("hugged");
 }

@@ -4,9 +4,9 @@ import com.hea3ven.gfriendmedianews.commands.ActionCommand
 import com.hea3ven.gfriendmedianews.mods.Module
 import de.btobastian.javacord.entities.message.Message
 
-class MiscModule() : Module {
+class MiscModule : Module {
 
-	override val commands = listOf(ActionCommand("rekt", this::onRekt))
+	override val commands = listOf(ActionCommand("rekt", " **\$rekt**: Show rekt message.", this::onRekt))
 
 	fun onRekt(message: Message, args: String?) {
 		val output = StringBuilder()

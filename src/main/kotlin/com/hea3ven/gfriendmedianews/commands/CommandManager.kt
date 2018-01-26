@@ -1,5 +1,6 @@
 package com.hea3ven.gfriendmedianews.commands
 
+import com.hea3ven.gfriendmedianews.util.isAdmin
 import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.entities.message.Message
 import de.btobastian.javacord.listener.message.MessageCreateListener
@@ -11,7 +12,7 @@ class CommandManager(val prefix: String) : MessageCreateListener {
 	private val commands: MutableMap<String, Command> = mutableMapOf()
 
 	fun registerCommand(command :Command){
-		commands.put(command.name, command)
+		commands[command.name] = command
 	}
 
 	override fun onMessageCreate(discord: DiscordAPI, message: Message) {
@@ -22,6 +23,10 @@ class CommandManager(val prefix: String) : MessageCreateListener {
 		val cmdLine = message.content.substring(prefix.length)
 		val (cmdName, cmdArgs) = parseCmdLine(cmdLine)
 		val command = commands[cmdName] ?: return
+		if (!message.channelReceiver.server.isAdmin(discord, message.author)) {
+			message.reply("You don't have permissions to do this")
+			return
+		}
 		logger.debug("Running command {}", command.name)
 		command.handle(message, cmdArgs)
 	}
