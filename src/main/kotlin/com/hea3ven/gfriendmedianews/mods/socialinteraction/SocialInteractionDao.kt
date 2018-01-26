@@ -7,27 +7,21 @@ import org.hibernate.Session
 class SocialInteractionDao(sess: Session) : AbstractDao<SocialInteractionStat>(sess) {
 	override fun getEntityClass() = SocialInteractionStat::class.java
 
-	fun find(slapperId: String?, slappeeId: String): SocialInteractionStat? {
-		val crit = createCrit()
+	fun countTimesSource(type: InteractionType, sourceId: String): Long? {
+		val crit = createCrit(Long::class.java)
 		val slapStat = crit.from(SocialInteractionStat::class.java)
-		crit.where(cb.and(cb.equal(slapStat.get<String>("slapperId"), slapperId),
-				cb.equal(slapStat.get<String>("slappeeId"), slappeeId)))
+		crit.select(cb.count(slapStat.get<Long>("id")))
+		crit.where(cb.and(cb.equal(slapStat.get<InteractionType>("type"), type),
+				cb.equal(slapStat.get<String>("sourceId"), sourceId)))
 		return find(crit)
 	}
 
-	fun countTimesSlapper(slapperId: String): Int? {
-		val crit = createCrit(Int::class.java)
+	fun countTimesTarget(type: InteractionType, targetId: String): Long? {
+		val crit = createCrit(Long::class.java)
 		val slapStat = crit.from(SocialInteractionStat::class.java)
-		crit.select(cb.sum(slapStat.get<Int>("count")))
-		crit.where(cb.equal(slapStat.get<String>("slapperId"), slapperId))
-		return find(crit)
-	}
-
-	fun countTimesSlappee(slappeeId: String?): Int? {
-		val crit = createCrit(Int::class.java)
-		val slapStat = crit.from(SocialInteractionStat::class.java)
-		crit.select(cb.sum(slapStat.get<Int>("count")))
-		crit.where(cb.equal(slapStat.get<String>("slappeeId"), slappeeId))
+		crit.select(cb.count(slapStat.get<Long>("id")))
+		crit.where(cb.and(cb.equal(slapStat.get<InteractionType>("type"), type),
+				cb.equal(slapStat.get<String>("targetId"), targetId)))
 		return find(crit)
 	}
 }

@@ -6,16 +6,18 @@ import com.hea3ven.gfriendmedianews.persistance.Persistence
 import de.btobastian.javacord.entities.message.Message
 
 class SocialInteractionsModule(private val persistence: Persistence) : Module {
-	override val commands = listOf(ActionCommand("slap", this::onSlap),
-			ActionCommand("slapStat", this::onSlapStat))
+	override val commands = listOf(ActionCommand("slap", { m, a -> onInteraction(m, a, InteractionType.SLAP) }),
+			ActionCommand("slapstat", { m, a -> onInteractionStat(m, a, InteractionType.SLAP) }),
+			ActionCommand("hug", { m, a -> onInteraction(m, a, InteractionType.HUG) }),
+			ActionCommand("hugstat", { m, a -> onInteractionStat(m, a, InteractionType.HUG) }))
 
-	init{
+	init {
 
 		persistence.registerDaoFactory(SocialInteractionDao::class.java, SocialInteractionDaoFactory())
 	}
 
-	fun onSlap(message: Message, args: String?) {
-		if(args == null) {
+	fun onInteraction(message: Message, args: String?, type: InteractionType) {
+		if (args == null) {
 			return
 		}
 		message.delete()
@@ -24,9 +26,7 @@ class SocialInteractionsModule(private val persistence: Persistence) : Module {
 		message.reply(message.author.mentionTag + " slapped " + args)
 		persistence.beginTransaction().use { tx ->
 			slappees.forEach {
-				val slapStat = tx.getDao(SocialInteractionDao::class.java).find(slapper, it) ?: SocialInteractionStat(
-						slapper, it)
-				slapStat.count += 1
+				val slapStat = SocialInteractionStat(type, slapper, it)
 				tx.getDao(SocialInteractionDao::class.java).persist(slapStat)
 			}
 		}
@@ -36,13 +36,12 @@ class SocialInteractionsModule(private val persistence: Persistence) : Module {
 		if (it.startsWith("<@") && it.endsWith(">")) it.substring(2, it.length - 2) else null
 	}
 
-	fun onSlapStat(message: Message, args: String?) {
+	fun onInteractionStat(message: Message, args: String?, type: InteractionType) {
 		persistence.beginTransaction().use { tx ->
 			val slapper = message.author.id
-			val slapperTimes = tx.getDao(SocialInteractionDao::class.java).countTimesSlapper(slapper)
-			val slappeeTimes = tx.getDao(SocialInteractionDao::class.java).countTimesSlappee(slapper)
-			message.reply("You've slapped $slapperTimes times")
-			message.reply("You've been slapped $slappeeTimes times")
+			val slapperTimes = tx.getDao(SocialInteractionDao::class.java).countTimesSource(type, slapper)
+			val slappeeTimes = tx.getDao(SocialInteractionDao::class.java).countTimesTarget(type, slapper)
+			message.reply("You've ${type.verb} $slapperTimes time(s)\nYou've been ${type.verb} $slappeeTimes time(s)")
 		}
 	}
 
