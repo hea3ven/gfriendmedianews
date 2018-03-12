@@ -24,10 +24,14 @@ class SocialInteractionsModule(private val persistence: Persistence) : Module {
 		if (args == null) {
 			return
 		}
+		if (args.contains("@everyone") || args.contains("@here")) {
+			message.reply(":eyes:")
+			return
+		}
 		message.delete()
 		val slapper = message.author.id
 		val slappees = parseSlapees(args.split(" "))
-		message.reply(message.author.mentionTag + " slapped " + args)
+		message.reply(message.author.mentionTag + " " + type.verb + " " + args)
 		persistence.beginTransaction().use { tx ->
 			slappees.forEach {
 				val slapStat = SocialInteractionStat(type, slapper, it)
@@ -37,15 +41,17 @@ class SocialInteractionsModule(private val persistence: Persistence) : Module {
 	}
 
 	private fun parseSlapees(args: List<String>) = args.mapNotNull {
-		if (it.startsWith("<@") && it.endsWith(">")) it.substring(2, it.length - 2) else null
+		if (it.startsWith("<@") && it.endsWith(">")) it.substring(2, it.length - 1) else null
 	}
 
 	fun onInteractionStat(message: Message, args: String?, type: InteractionType) {
 		persistence.beginTransaction().use { tx ->
-			val slapper = message.author.id
+			val slapper = args?.substring(2, args.length - 1) ?: message.author.id
 			val slapperTimes = tx.getDao(SocialInteractionDao::class.java).countTimesSource(type, slapper)
 			val slappeeTimes = tx.getDao(SocialInteractionDao::class.java).countTimesTarget(type, slapper)
-			message.reply("You've ${type.verb} $slapperTimes time(s)\nYou've been ${type.verb} $slappeeTimes time(s)")
+			val slapperMember = message.channelReceiver.server.getMemberById(slapper)!!
+			message.reply(
+					"${slapperMember.name}:\n\tYou've ${type.verb} $slapperTimes time(s)\n\tYou've been ${type.verb} $slappeeTimes time(s)")
 		}
 	}
 
