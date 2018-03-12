@@ -57,8 +57,8 @@ class TwitterNewsSource : NewsSource() {
 						if (rtUserName != null)
 							rtUserName = "@" + rtUserName
 						sourceConfig.stateData = it.id.toString()
-						TwitterNewsPost(date, userName, it.user.url, it.user.miniProfileImageURL, rtUserName,
-								this, url, text, mediaUrls)
+						TwitterNewsPost(date, userName, "https://twitter.com/" + it.user.screenName,
+								it.user.miniProfileImageURL, rtUserName, this, url, text, mediaUrls)
 					}
 		} catch (e: TwitterException) {
 			logger.warn("Could not read from twitter")
