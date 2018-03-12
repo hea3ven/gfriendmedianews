@@ -23,7 +23,7 @@ class CommandManager(val prefix: String) : MessageCreateListener {
 		val cmdLine = message.content.substring(prefix.length)
 		val (cmdName, cmdArgs) = parseCmdLine(cmdLine)
 		val command = commands[cmdName] ?: return
-		if (!message.channelReceiver.server.isAdmin(discord, message.author)) {
+		if (command.requiresAdmin && !message.channelReceiver.server.isAdmin(discord, message.author)) {
 			message.reply("You don't have permissions to do this")
 			return
 		}

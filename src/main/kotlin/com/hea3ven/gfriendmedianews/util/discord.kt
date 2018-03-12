@@ -11,7 +11,7 @@ fun  escapeLinks(text: String): String {
 }
 
 fun Server.isAdmin(discord: DiscordAPI, user: User): Boolean {
-	val botRolePos = discord.yourself.getRoles(this).filter { it.hoist }.map { it.position }.min()
+	val botRolePos = discord.yourself.getRoles(this).filter { it.hoist }.map { it.position }.max()
 	val roles = user.getRoles(this)
 	return !(roles == null || roles.isEmpty() || roles.all { it.position < botRolePos!! })
 }
