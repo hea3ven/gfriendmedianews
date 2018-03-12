@@ -32,7 +32,7 @@ class InstagramNewsSource : NewsSource() {
 			lastDate = Date(0)
 		}
 		try {
-			URL("https://www.instagram.com/" + sourceConfig.connectionData + "/media").openStream().use { stream ->
+			URL("https://www.instagram.com/" + sourceConfig.connectionData + "/?__a=1").openStream().use { stream ->
 				val posts = try {
 					JsonParser().parse(InputStreamReader(stream)).asJsonObject
 				} catch (e: Exception) {
