@@ -5,6 +5,7 @@ import com.hea3ven.gfriendmedianews.ServerNewsManager
 import com.hea3ven.gfriendmedianews.commands.ActionCommand
 import com.hea3ven.gfriendmedianews.mods.Module
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
+import com.hea3ven.gfriendmedianews.util.getChannelId
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.message.Message
 import org.slf4j.LoggerFactory
@@ -78,16 +79,7 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
 		val srcType = splitArgs[1]
 		val srcData = splitArgs[2]
 
-		if (srcChannel!!.startsWith("<#")) {
-			srcChannel = message.channelReceiver.server.getChannelById(
-					srcChannel.substring(2, srcChannel.length - 1)).id
-		} else {
-			srcChannel = message.channelReceiver
-					.server
-					.channels
-					.find { it.name == srcChannel }
-					?.id
-		}
+		srcChannel = message.channelReceiver.server.getChannelId(srcChannel!!)
 		if (srcChannel == null) {
 			message.reply("Could not add the source: could not find the channel " + splitArgs[0])
 			return

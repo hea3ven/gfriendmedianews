@@ -19,6 +19,9 @@
     <logger name="com.hea3ven.gfriendmedianews">
         <level value="debug"/>
     </logger>
+    <logger name="com.hea3ven.gfriendmedianews.mods.f1announcement">
+        <level value="trace"/>
+    </logger>
 
     <root>
         <priority value="info"/>

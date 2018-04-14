@@ -10,6 +10,7 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.showsql">true </property>
 
+        <mapping class="com.hea3ven.gfriendmedianews.mods.f1announcement.F1ServerConfig"/>
         <mapping class="com.hea3ven.gfriendmedianews.mods.medianews.ServerConfig"/>
         <mapping class="com.hea3ven.gfriendmedianews.mods.medianews.SourceConfig"/>
         <mapping class="com.hea3ven.gfriendmedianews.mods.socialinteraction.SocialInteractionStat"/>
