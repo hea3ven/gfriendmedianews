@@ -17,7 +17,9 @@ import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.Categories
 import org.apache.commons.collections4.functors.OrPredicate
 import org.slf4j.LoggerFactory
-import java.net.URL
+import java.io.InputStreamReader
+import java.io.StringReader
+import java.lang.Long.min
 import java.text.MessageFormat
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -26,7 +28,8 @@ import java.time.temporal.ChronoUnit
 import java.util.Date
 import kotlin.concurrent.thread
 
-val f1CalendarUrl = URL("https://www.f1calendar.com/download/f1-calendar_p1_p2_p3_q_gp.ics")
+//val f1CalendarUrl = URL("https://www.f1calendar.com/download/f1-calendar_p1_p2_p3_q_gp.ics")
+val f1CalendarUrl = F1AnnouncementModule::class.java.classLoader.getResource("f1-calendar_p1_p2_p3_q_gp.ics")
 
 class F1AnnouncementModule(val bot: ChinguBot) : Module {
 
@@ -49,12 +52,22 @@ class F1AnnouncementModule(val bot: ChinguBot) : Module {
 	override fun onConnect(tx: PersistenceTransaction) {
 		super.onConnect(tx)
 
-		f1CalendarUrl.openStream().use {
-			try {
-				f1Calendar = CalendarBuilder().build(it)
-			} catch (e: ParserException) {
-				logger.error("Could not load calendar", e)
+		try {
+			logger.info("Downloading F1 calendar")
+			f1CalendarUrl.openStream().use {
+				try {
+					val data = InputStreamReader(it).readText()
+					logger.info("Downloaded F1 calendar")
+					f1Calendar = CalendarBuilder().build(StringReader(data))
+					logger.info("Parsed F1 calendar")
+				} catch (e: ParserException) {
+					logger.error("Could not load calendar", e)
+					return
+				}
 			}
+		} catch (e: Exception) {
+			logger.error("Unknown error", e)
+			return
 		}
 		for (server in bot.discord.servers) {
 			var serverConfig = tx.getDao(F1ServerConfigDao::class.java).findByServerId(server.id)
@@ -64,7 +77,9 @@ class F1AnnouncementModule(val bot: ChinguBot) : Module {
 			}
 			serverConfigs[serverConfig.serverId] = serverConfig
 		}
+		logger.info("Starting background thread")
 		thread {
+			logger.info("Started background thread")
 			while (!bot.stop) {
 				try {
 					val now = ZonedDateTime.now()
@@ -74,7 +89,7 @@ class F1AnnouncementModule(val bot: ChinguBot) : Module {
 					val hours = ChronoUnit.HOURS.between(now, startTime)
 					if (hours > 5) {
 						logger.trace("Sleeping for {} hours", hours - 5)
-						Thread.sleep((hours - 5) * 60 * 60 * 1000)
+						Thread.sleep(min(5, (hours - 5)) * 60 * 60 * 1000)
 					} else if (hours > 2) {
 						logger.trace("Sleeping for {} hours", hours - 2)
 						Thread.sleep((hours - 2) * 60 * 60 * 1000)

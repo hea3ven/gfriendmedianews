@@ -23,6 +23,7 @@ abstract class DiscordBot(val persistence: Persistence,
 
 	fun start() {
 		modules.flatMap(Module::commands).forEach(commandManager::registerCommand)
+		logger.info("Loaded modules: " + modules.map { it::class.java.simpleName }.joinToString())
 
 		logger.info("Connecting to discord")
 		discord.setAutoReconnect(false)
