@@ -101,7 +101,7 @@ class F1AnnouncementModule(val bot: ChinguBot) : Module {
 						} else {
 							logger.trace("Broadcasting the start of event {}", nextEvent.summary.value)
 							broadcastEventNotification(nextEvent)
-							Thread.sleep(2 * 60 * 60 * 1000)
+							Thread.sleep(20 * 60 * 60 * 1000)
 						}
 					}
 				} catch (e: Exception) {
