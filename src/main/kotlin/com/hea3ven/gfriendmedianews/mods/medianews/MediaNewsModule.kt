@@ -6,7 +6,9 @@ import com.hea3ven.gfriendmedianews.commands.ActionCommand
 import com.hea3ven.gfriendmedianews.mods.Module
 import com.hea3ven.gfriendmedianews.mods.medianews.dao.NewsConfigDao
 import com.hea3ven.gfriendmedianews.mods.medianews.dao.ServerConfigDaoFactory
+import com.hea3ven.gfriendmedianews.mods.medianews.model.InstagramNewsConfig
 import com.hea3ven.gfriendmedianews.mods.medianews.model.TwitterNewsConfig
+import com.hea3ven.gfriendmedianews.mods.medianews.model.YouTubeNewsConfig
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
 import com.hea3ven.gfriendmedianews.util.getChannelId
 import de.btobastian.javacord.entities.Server
@@ -79,6 +81,8 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
         try {
             val newsConfig = when (srcType) {
                 "twitter" -> TwitterNewsConfig(message.channelReceiver.server.id, srcChannel, srcData)
+                "youtube" -> YouTubeNewsConfig(message.channelReceiver.server.id, srcChannel, srcData)
+                "instagram" -> InstagramNewsConfig(message.channelReceiver.server.id, srcChannel, srcData)
                 else -> throw IllegalArgumentException(srcType + " is not a valid source type")
             }
             serverManagers[message.channelReceiver.server.id]!!.addSource(bot.persistence, newsConfig)
