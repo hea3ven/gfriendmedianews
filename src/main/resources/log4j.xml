@@ -17,9 +17,15 @@
     </appender>
 
     <logger name="com.hea3ven.gfriendmedianews">
-        <level value="debug"/>
+        <level value="trace"/>
+    </logger>
+    <logger name="de.btobastian.javacord">
+        <level value="info"/>
     </logger>
     <logger name="com.hea3ven.gfriendmedianews.mods.f1announcement">
+        <level value="trace"/>
+    </logger>
+    <logger name="org.mongodb.morphia">
         <level value="trace"/>
     </logger>
 

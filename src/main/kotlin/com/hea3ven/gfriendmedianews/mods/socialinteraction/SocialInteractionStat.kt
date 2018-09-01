@@ -1,27 +1,23 @@
 package com.hea3ven.gfriendmedianews.mods.socialinteraction
 
-import org.hibernate.annotations.GenericGenerator
-import java.util.*
-import javax.persistence.*
+import org.mongodb.morphia.annotations.Entity
+import java.util.Date
 
-@Entity
-@Table(name = "social_interaction_stat")
+@Entity(noClassnameStored = true)
 class SocialInteractionStat(
-		@Id
-		@GeneratedValue(generator = "increment")
-		@GenericGenerator(name = "increment", strategy = "increment")
-		var id: Long,
-		@Enumerated(EnumType.STRING)
-		var type: InteractionType,
-		var sourceId: String,
-		var targetId: String,
-		var date: Date) {
+        var serverId: String,
+        var channelId: String,
+        var type: InteractionType,
+        var sourceId: String,
+        var targetId: String,
+        var date: Date) {
 
-	constructor() : this(0, InteractionType.SLAP, "", "", Date())
+    constructor() : this("", "", InteractionType.HUG, "", "")
 
-	constructor(type: InteractionType, sourceId: String, targetId: String) : this(0, type, sourceId, targetId, Date())
+    constructor(serverId: String, channelId: String, type: InteractionType, sourceId: String, targetId: String) : this(
+            serverId, channelId, type, sourceId, targetId, Date())
 }
 
 enum class InteractionType(val verb: String) {
-	SLAP("slapped"), HUG("hugged");
+    SLAP("slapped"), HUG("hugged");
 }

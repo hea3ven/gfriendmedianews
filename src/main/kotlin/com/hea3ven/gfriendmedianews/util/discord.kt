@@ -7,19 +7,19 @@ import de.btobastian.javacord.entities.User
 private val urlRegex = """https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)""".toRegex()
 
 fun escapeLinks(text: String): String {
-	return urlRegex.replace(text, "<$0>")
+    return urlRegex.replace(text, "<$0>")
 }
 
 fun Server.isAdmin(discord: DiscordAPI, user: User): Boolean {
-	val botRolePos = discord.yourself.getRoles(this).filter { it.hoist }.map { it.position }.max()
-	val roles = user.getRoles(this)
-	return !(roles == null || roles.isEmpty() || roles.all { it.position < botRolePos!! })
+    val botRolePos = discord.yourself.getRoles(this).filter { it.hoist }.map { it.position }.max()
+    val roles = user.getRoles(this)
+    return !(roles == null || roles.isEmpty() || roles.all { it.position < botRolePos!! })
 }
 
 fun Server.getChannelId(ref: String): String? {
-	if (ref.startsWith("<#")) {
-		return this.getChannelById(ref.substring(2, ref.length - 1))?.id
-	} else {
-		return this.channels.find { it.name == ref }?.id
-	}
+    if (ref.startsWith("<#")) {
+        return this.getChannelById(ref.substring(2, ref.length - 1))?.id
+    } else {
+        return this.channels.find { it.name == ref }?.id
+    }
 }

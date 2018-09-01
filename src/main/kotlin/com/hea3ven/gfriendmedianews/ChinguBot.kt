@@ -11,8 +11,8 @@ import de.btobastian.javacord.DiscordAPI
 
 class ChinguBot(persistence: Persistence, discord: DiscordAPI) : DiscordBot(persistence, discord) {
 
-	override val modules = listOf(MainModule(this), MiscModule(), SocialInteractionsModule(persistence),
-			MediaNewsModule(this), F1AnnouncementModule(this))
+    override val modules = listOf(MainModule(this), MiscModule(), SocialInteractionsModule(persistence),
+                                  MediaNewsModule(this), F1AnnouncementModule(this))
 
 }
 

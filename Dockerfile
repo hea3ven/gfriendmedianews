@@ -6,4 +6,4 @@ COPY build/dependencies/* /opt/gfriendmedianews/lib/
 RUN mkdir /opt/gfriendmedianews/var
 
 WORKDIR /opt/gfriendmedianews
-ENTRYPOINT ["java", "-cp", "/opt/gfriendmedianews/var:/opt/gfriendmedianews/lib/*", "com.hea3ven.gfriendmedianews.MainKt"]
+ENTRYPOINT ["java", "-Xmx64m", "-cp", "/opt/gfriendmedianews/var:/opt/gfriendmedianews/lib/*", "com.hea3ven.gfriendmedianews.MainKt"]

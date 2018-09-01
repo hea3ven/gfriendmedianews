@@ -6,16 +6,16 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.main")
 fun main(args: Array<String>) {
-	try {
-		Persistence().use { persistence ->
-			val api = Javacord.getApi(Config.discordApiToken, true)
-			val mediaNews = ChinguBot(persistence, api)
-			mediaNews.start()
-		}
-	} catch (e: Throwable) {
-		logger.error("Unhandled exception", e)
-	} finally {
-		System.exit(0)
-	}
+    try {
+        Persistence().use { persistence ->
+            val api = Javacord.getApi(Config.discordApiToken, true)
+            val mediaNews = ChinguBot(persistence, api)
+            mediaNews.start()
+        }
+    } catch (e: Throwable) {
+        logger.error("Unhandled exception", e)
+    } finally {
+        System.exit(0)
+    }
 }
 

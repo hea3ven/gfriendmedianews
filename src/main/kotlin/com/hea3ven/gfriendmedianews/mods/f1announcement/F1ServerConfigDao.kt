@@ -2,20 +2,17 @@ package com.hea3ven.gfriendmedianews.mods.f1announcement
 
 import com.hea3ven.gfriendmedianews.persistance.AbstractDao
 import com.hea3ven.gfriendmedianews.persistance.DaoFactory
-import org.hibernate.Session
+import org.mongodb.morphia.Datastore
 
-class F1ServerConfigDao(sess: Session) : AbstractDao<F1ServerConfig>(sess) {
+class F1ServerConfigDao(ds: Datastore) : AbstractDao<F1ServerConfig>(ds) {
 
-	override fun getEntityClass() = F1ServerConfig::class.java
+    override fun getEntityClass() = F1ServerConfig::class.java
 
-	fun findByServerId(id: String): F1ServerConfig? {
-		val crit = createCrit()
-		val servConf = crit.from(F1ServerConfig::class.java)
-		crit.where(cb.equal(servConf.get<String>("serverId"), id))
-		return find(crit)
-	}
+    fun findByServerId(id: String): F1ServerConfig? {
+        return createQuery().field("serverId").equal(id).get()
+    }
 }
 
-class F1ServerConfigDaoFactory : DaoFactory<F1ServerConfigDao> {
-	override fun create(sess: Session) = F1ServerConfigDao(sess)
+class F1ServerConfigDaoFactory : DaoFactory<F1ServerConfig> {
+    override fun create(ds: Datastore) = F1ServerConfigDao(ds)
 }

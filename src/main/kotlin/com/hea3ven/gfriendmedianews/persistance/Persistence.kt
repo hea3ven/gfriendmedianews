@@ -1,92 +1,78 @@
 package com.hea3ven.gfriendmedianews.persistance
 
-import org.hibernate.Session
-import org.hibernate.SessionFactory
-import org.hibernate.boot.MetadataSources
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder
+import com.hea3ven.gfriendmedianews.Config
+import org.mongodb.morphia.Datastore
+import org.mongodb.morphia.Morphia
 import java.io.Closeable
-import javax.persistence.TypedQuery
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
 
 
 class Persistence : Closeable {
-	private val sessionFactory: SessionFactory
+    private val morphia = Morphia().apply {
+        ds = this.createDatastore(com.mongodb.MongoClient(Config.mongoDbHost, Config.mongoDbPort), "gfriendmedianews")
+        this.mapPackage("com.hea3ven.gfriendmedianews")
+    }
 
-	private val daoFactories: MutableMap<Class<*>, DaoFactory<*>> = mutableMapOf()
+    private lateinit var ds: Datastore
 
-	init {
-		val registry = StandardServiceRegistryBuilder().configure().build()
-		try {
-			sessionFactory = MetadataSources(registry).buildMetadata().buildSessionFactory()
-		} catch (e: Throwable) {
-			StandardServiceRegistryBuilder.destroy(registry)
-			throw RuntimeException(e)
-		}
-	}
+    private val daoFactories: MutableMap<Class<*>, AbstractDao<*>> = mutableMapOf()
 
-	fun registerDaoFactory(daoClass:Class<*>, daoFactory: DaoFactory<*>){
-		daoFactories[daoClass] = daoFactory
-	}
+    fun <T, R : AbstractDao<T>> registerDaoFactory(daoClass: Class<R>, daoFactory: DaoFactory<T>) {
+        daoFactories[daoClass] = daoFactory.create(ds)
+    }
 
-	fun <R> getDaoFactory(daoClass: Class<R>): DaoFactory<R> {
-		return daoFactories[daoClass] as DaoFactory<R>
-	}
+    @Suppress("UNCHECKED_CAST")
+    fun <T, R : AbstractDao<T>> getDao(daoClass: Class<R>): R {
+        return daoFactories[daoClass] as R
+    }
 
-	override fun close() {
-		sessionFactory.close()
-	}
+    override fun close() {
+    }
 
-	fun beginTransaction() = PersistenceTransaction(this, sessionFactory.openSession())
+    fun beginTransaction() = PersistenceTransaction(this)
 
 }
 
-interface DaoFactory<out T> {
-	fun create(sess: Session): T
+interface DaoFactory<T> {
+    fun create(ds: Datastore): AbstractDao<T>
 }
 
-class PersistenceTransaction(val persistence: Persistence, val sess: Session) : Closeable {
-	init {
-		sess.beginTransaction()
-	}
+class PersistenceTransaction(val persistence: Persistence) : Closeable {
+    override fun close() {
+    }
 
-	override fun close() {
-		sess.transaction.commit()
-		sess.close()
-	}
-
-	fun <T, R : AbstractDao<T>> getDao(daoClass :Class<R>): R {
-		return persistence.getDaoFactory(daoClass).create(sess)
-	}
+    fun <T, R : AbstractDao<T>> getDao(daoClass: Class<R>): R {
+        return persistence.getDao(daoClass)
+    }
 
 }
 
-abstract class AbstractDao<T>(val sess: Session) {
+abstract class AbstractDao<T>(protected val ds: Datastore) {
 
-	protected abstract fun getEntityClass(): Class<T>
+    protected abstract fun getEntityClass(): Class<T>
 
-	protected val cb: CriteriaBuilder
-		get() = sess.criteriaBuilder
+    protected fun createQuery() = createQuery(getEntityClass())
+    protected fun <R> createQuery(klass: Class<R>) = ds.createQuery(klass)!!
 
-	protected fun createCrit() = createCrit(getEntityClass())
-	protected fun <R> createCrit(klass: Class<R>) = cb.createQuery(klass)!!
+    protected fun createUpdate() = createUpdate(getEntityClass())
+    protected fun <R> createUpdate(klass: Class<R>) = ds.createUpdateOperations(klass)
 
-	protected fun <R> find(crit: CriteriaQuery<R>): R? {
-		return find(sess.createQuery(crit))
-	}
+    //	protected fun <R> find(crit: CriteriaQuery<R>): R? {
+    //		return find(sess.createQuery(crit))
+    //	}
 
-	protected fun <R> find(query: TypedQuery<R>): R? {
-		val result = query.resultList
-		if (result.size != 1)
-			return null
-		return result[0]
-	}
+    //	protected fun <R> find(query: TypedQuery<R>): R? {
+    //		val result = query.resultList
+    //		if (result.size != 1)
+    //			return null
+    //		return result[0]
+    //	}
 
-	private fun findNamed(queryBuilder: (TypedQuery<T>) -> TypedQuery<T>, queryName: String) = find(
-			queryBuilder.invoke(sess.createNamedQuery(queryName, getEntityClass())))
+    //	private fun findNamed(queryBuilder: (TypedQuery<T>) -> TypedQuery<T>, queryName: String) = find(
+    //			queryBuilder.invoke(sess.createNamedQuery(queryName, getEntityClass())))
 
-	fun persist(obj: T) {
-		sess.saveOrUpdate(obj)
-	}
+    fun persist(obj: T) {
+        ds.save(obj)
+    }
+
 }
 
