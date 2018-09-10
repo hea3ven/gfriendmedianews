@@ -2,7 +2,7 @@ group 'com.hea3ven.gfriendmedianews'
 version '1.0.0'
 
 buildscript {
-	ext.kotlin_version = '1.2.31'
+	ext.kotlin_version = '1.2.61'
 
 	repositories {
 		mavenCentral()

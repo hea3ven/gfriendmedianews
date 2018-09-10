@@ -19,7 +19,7 @@ abstract class DiscordBot(val persistence: Persistence,
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    private val commandManager = CommandManager("\$")
+    val commandManager = CommandManager("\$", this)
 
     fun start() {
         modules.flatMap(Module::commands).forEach(commandManager::registerCommand)

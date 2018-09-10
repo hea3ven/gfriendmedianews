@@ -23,3 +23,5 @@ fun Server.getChannelId(ref: String): String? {
         return this.channels.find { it.name == ref }?.id
     }
 }
+
+fun parseUserId(msg: String) = if (msg.startsWith("<@") && msg.endsWith(">")) msg.substring(2, msg.length - 1) else null

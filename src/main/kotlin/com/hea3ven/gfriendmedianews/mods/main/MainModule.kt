@@ -3,7 +3,8 @@ package com.hea3ven.gfriendmedianews.mods.main
 import com.hea3ven.gfriendmedianews.ChinguBot
 import com.hea3ven.gfriendmedianews.commands.ActionCommand
 import com.hea3ven.gfriendmedianews.mods.Module
-import com.hea3ven.gfriendmedianews.util.isAdmin
+import com.hea3ven.gfriendmedianews.mods.permissions.dao.UserPermissionsDao
+import com.hea3ven.gfriendmedianews.mods.permissions.dao.UserPermissionsDaoFactory
 import de.btobastian.javacord.entities.message.Message
 import org.slf4j.LoggerFactory
 
@@ -19,8 +20,9 @@ class MainModule(private val bot: ChinguBot) : Module {
         output.append("This is BuddyBot, by <@173217833168273408>.\n")
         output.append(" The available commands are the following:\n")
         bot.modules.flatMap(Module::commands).filter { c ->
-            !c.requiresAdmin || message.channelReceiver.server.isAdmin(bot.discord, message.author)
-        }.forEach({ c -> output.append(c.helpText).append('\n') })
+            bot.commandManager.permissionManager.hasPermission(message.author, message.channelReceiver.server,
+                    bot.discord, c)
+        }.forEach { c -> output.append(c.helpText).append('\n') }
         message.reply(output.toString())
     }
 

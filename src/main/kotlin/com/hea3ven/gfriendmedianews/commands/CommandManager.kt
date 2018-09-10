@@ -1,15 +1,20 @@
 package com.hea3ven.gfriendmedianews.commands
 
+import com.hea3ven.gfriendmedianews.util.DiscordBot
 import com.hea3ven.gfriendmedianews.util.isAdmin
 import de.btobastian.javacord.DiscordAPI
+import de.btobastian.javacord.entities.Server
+import de.btobastian.javacord.entities.User
 import de.btobastian.javacord.entities.message.Message
 import de.btobastian.javacord.listener.message.MessageCreateListener
 import org.slf4j.LoggerFactory
 
-class CommandManager(val prefix: String) : MessageCreateListener {
+class CommandManager(val prefix: String, val bot: DiscordBot) : MessageCreateListener {
     private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.CommandManager")
 
     private val commands: MutableMap<String, Command> = mutableMapOf()
+
+    var permissionManager : PermissionManager = DefaultPermissionManager()
 
     fun registerCommand(command: Command) {
         commands[command.name] = command
@@ -23,7 +28,7 @@ class CommandManager(val prefix: String) : MessageCreateListener {
         val cmdLine = message.content.substring(prefix.length)
         val (cmdName, cmdArgs) = parseCmdLine(cmdLine)
         val command = commands[cmdName] ?: return
-        if (command.requiresAdmin && !message.channelReceiver.server.isAdmin(discord, message.author)) {
+        if (!permissionManager.hasPermission(message.author, message.channelReceiver.server, discord, command)) {
             message.reply("You don't have permissions to do this")
             return
         }
@@ -40,3 +45,4 @@ class CommandManager(val prefix: String) : MessageCreateListener {
         }
     }
 }
+
