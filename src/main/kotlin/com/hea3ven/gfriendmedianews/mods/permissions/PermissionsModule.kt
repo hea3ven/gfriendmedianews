@@ -3,7 +3,6 @@ package com.hea3ven.gfriendmedianews.mods.permissions
 import com.hea3ven.gfriendmedianews.ChinguBot
 import com.hea3ven.gfriendmedianews.commands.ActionCommand
 import com.hea3ven.gfriendmedianews.mods.Module
-import com.hea3ven.gfriendmedianews.mods.permissions.DbPermissionManager
 import com.hea3ven.gfriendmedianews.mods.permissions.dao.UserPermissionsDao
 import com.hea3ven.gfriendmedianews.mods.permissions.dao.UserPermissionsDaoFactory
 import com.hea3ven.gfriendmedianews.mods.permissions.model.Permission
@@ -17,7 +16,11 @@ class PermissionsModule(private val bot: ChinguBot) : Module {
 
     private val logger = LoggerFactory.getLogger(PermissionsModule::class.java)
 
-    override val commands = listOf(ActionCommand("permset", " **\$permset**: Set permissions.", this::onPermSet, true))
+    override val commands = listOf(
+            ActionCommand("permset", " **\$permset [user] [key]**: Set the specified permission.", this::onPermSet,
+                          true),
+            ActionCommand("permrem", " **\$permrem [user] [key]**: Remove the specified permission.",
+                          this::onPermRem, true))
 
     init {
         bot.persistence.registerDaoFactory(UserPermissionsDao::class.java, UserPermissionsDaoFactory())
@@ -28,11 +31,18 @@ class PermissionsModule(private val bot: ChinguBot) : Module {
         bot.commandManager.permissionManager = DbPermissionManager(bot.persistence)
     }
 
-    fun onPermSet(message: Message, args: String?) {
+    private fun onPermSet(message: Message, args: String?) {
+        changePermission(message, args, true)
+    }
+
+    private fun onPermRem(message: Message, args: String?) {
+        changePermission(message, args, false)
+    }
+
+    private fun changePermission(message: Message, args: String?, permissionValue: Boolean) {
         val splitArgs = args?.split(" ")?.toTypedArray() ?: arrayOf()
         val userId: String? = parseUserId(splitArgs[0])
         val permissionKey: String = splitArgs[1]
-        val permissionValue = splitArgs[2].toBoolean()
 
         if (userId == null) {
             message.reply("Invalid user")
@@ -51,6 +61,8 @@ class PermissionsModule(private val bot: ChinguBot) : Module {
 
             sess.getDao(UserPermissionsDao::class.java).persist(userPerms)
         }
+        logger.info("Changed permission for $userId: $permissionKey = $permissionValue")
+        message.reply("Permission '$permissionKey' set to $permissionValue")
     }
 
 }

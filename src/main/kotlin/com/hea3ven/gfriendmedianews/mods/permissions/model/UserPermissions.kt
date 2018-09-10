@@ -17,4 +17,7 @@ class UserPermissions(@Id var id: ObjectId, var userId: String, var permissions:
     }
 }
 
-class Permission(var serverId: String, var key: String, var value: Boolean)
+class Permission(var serverId: String, var key: String, var value: Boolean) {
+
+    constructor() : this("", "", false)
+}
