@@ -5,7 +5,7 @@ import org.bson.types.ObjectId
 import org.mongodb.morphia.annotations.Entity
 import org.mongodb.morphia.annotations.Id
 
-@Entity
+@Entity(noClassnameStored = true)
 class UserPermissions(@Id var id: ObjectId, var userId: String, var permissions: Set<Permission>) {
 
     constructor() : this("")
