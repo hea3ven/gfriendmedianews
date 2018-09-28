@@ -39,16 +39,14 @@ class TwitterNewsSource : NewsSource() {
                     it.retweetedStatus.text
                 }
                 //						text = escapeLinks(text)
-                val mediaUrls = if (it.mediaEntities.isNotEmpty()) {
-                    it.mediaEntities.map { it.mediaURL }
-                } else if (it.urlEntities.isNotEmpty()) {
-                    listOf(it.urlEntities.last()!!.url)
-                } else {
-                    listOf()
+                val mediaUrls = when {
+                    it.mediaEntities.isNotEmpty() -> it.mediaEntities.map { e -> e.mediaURL }
+                    it.urlEntities.isNotEmpty() -> listOf(it.urlEntities.last()!!.url)
+                    else -> listOf()
                 }
                 val userName = "@" + it.user.screenName
                 var rtUserName = it.retweetedStatus?.user?.screenName
-                if (rtUserName != null) rtUserName = "@" + rtUserName
+                if (rtUserName != null) rtUserName = "@$rtUserName"
                 sourceConfig.lastId = it.id
                 TwitterNewsPost(date, userName, "https://twitter.com/" + it.user.screenName,
                                 it.user.miniProfileImageURL, rtUserName, this, url, text, mediaUrls)

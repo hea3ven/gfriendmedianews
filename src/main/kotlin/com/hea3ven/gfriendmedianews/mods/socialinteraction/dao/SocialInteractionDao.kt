@@ -1,5 +1,7 @@
-package com.hea3ven.gfriendmedianews.mods.socialinteraction
+package com.hea3ven.gfriendmedianews.mods.socialinteraction.dao
 
+import com.hea3ven.gfriendmedianews.mods.socialinteraction.model.InteractionType
+import com.hea3ven.gfriendmedianews.mods.socialinteraction.model.SocialInteractionStat
 import com.hea3ven.gfriendmedianews.persistance.AbstractDao
 import com.hea3ven.gfriendmedianews.persistance.DaoFactory
 import org.mongodb.morphia.Datastore

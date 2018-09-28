@@ -11,7 +11,7 @@ import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
-import java.util.Date
+import java.util.*
 
 class YouTubeNewsSource : NewsSource() {
     private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.mods.medianews.source.YouTubeNewsSource")
@@ -35,7 +35,7 @@ class YouTubeNewsSource : NewsSource() {
         val playlistReq = youtube.playlistItems().list("snippet,contentDetails")
         playlistReq.playlistId = uploadsId
         val playlistItems = playlistReq.execute().items
-        val result = playlistItems.map {
+        val result = playlistItems.asSequence().map {
             val url = "https://youtube.com/watch?v=" + it.contentDetails.videoId
             val thumbnailUrl = it.snippet.thumbnails.standard.url
             val text = it.snippet.title
@@ -44,14 +44,14 @@ class YouTubeNewsSource : NewsSource() {
             val userUrl = "http://www.youtube.com/channel/" + it.snippet.channelId
             val userIcon = "http://i.ytimg.com/i/" + it.snippet.channelId + "/1.jpg"
             NewsPost(Color(255, 0, 0), date, userName, userUrl, userIcon, this, url, text, listOf(thumbnailUrl))
-        }.sortedBy { it.date.time }.filter { it.date.after(sourceConfig.lastDate) }
+        }.sortedBy { it.date.time }.filter { it.date.after(sourceConfig.lastDate) }.toList()
         if (result.isNotEmpty()) sourceConfig.lastDate = result.last().date
         return result
     }
 
     companion object {
-        val youtube: YouTube = YouTube.Builder(NetHttpTransport(), JacksonFactory(),
-                                               HttpRequestInitializer { }).setYouTubeRequestInitializer(
-                YouTubeRequestInitializer(Config.youtubeApiKey)).setApplicationName("gfriend-media-news").build()
+        val youtube: YouTube = YouTube.Builder(NetHttpTransport(), JacksonFactory(), HttpRequestInitializer { })
+                .setYouTubeRequestInitializer(YouTubeRequestInitializer(Config.youtubeApiKey))
+                .setApplicationName("gfriend-media-news").build()
     }
 }

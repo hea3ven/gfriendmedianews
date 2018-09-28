@@ -3,8 +3,6 @@ package com.hea3ven.gfriendmedianews
 import com.hea3ven.gfriendmedianews.mods.medianews.dao.NewsConfigDao
 import com.hea3ven.gfriendmedianews.mods.medianews.model.NewsConfig
 import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
-import com.hea3ven.gfriendmedianews.mods.medianews.source.InstagramNewsSource
-import com.hea3ven.gfriendmedianews.mods.medianews.source.YouTubeNewsSource
 import com.hea3ven.gfriendmedianews.persistance.Persistence
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
 import de.btobastian.javacord.entities.Server
@@ -34,13 +32,13 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
     }
 
     private fun fetchNews(newsConfig: NewsConfig, sess: PersistenceTransaction): List<NewsPost> {
-        try {
+        return try {
             val news = newsConfig.fetchNews()
             logger.debug("Found " + news.size + " new news for " + newsConfig.label)
-            return news
+            news
         } catch (e: Exception) {
             logger.error("Could not fetch news", e)
-            return listOf()
+            listOf()
         } finally {
             val dao = sess.getDao(NewsConfigDao::class.java)
             dao.persist(newsConfig)
@@ -48,7 +46,7 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
     }
 
     fun addSource(persistence: Persistence, newsConfig: NewsConfig) {
-        if (serverConfig.any(newsConfig::equalsData)){
+        if (serverConfig.any(newsConfig::equalsData)) {
             throw IllegalArgumentException("The source already exists")
         }
         serverConfig.add(newsConfig)
@@ -69,17 +67,9 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
 
     fun getChannelDisplay(server: Server, channelId: String): String {
         val channel = server.getChannelById(channelId)
-        if (channel == null) return "invalid"
-        else return "<#" + channel.id + ">"
+        return if (channel == null) "invalid"
+        else "<#" + channel.id + ">"
     }
 
 }
 
-val instagramSource = InstagramNewsSource()
-val youtubeSource = YouTubeNewsSource()
-//fun getSource(sourceConfig: SourceConfig) = when (sourceConfig.type) {
-//	"twitter" -> twitterSource
-//	"instagram" -> instagramSource
-//	"youtube" -> youtubeSource
-//	else -> throw IllegalArgumentException(sourceConfig.type + " is not a valid source type")
-//}

@@ -1,4 +1,4 @@
-package com.hea3ven.gfriendmedianews.mods.f1announcement
+package com.hea3ven.gfriendmedianews.mods.f1announcement.model
 
 import org.mongodb.morphia.annotations.Entity
 

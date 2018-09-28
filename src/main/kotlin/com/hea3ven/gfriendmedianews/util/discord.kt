@@ -17,10 +17,10 @@ fun Server.isAdmin(discord: DiscordAPI, user: User): Boolean {
 }
 
 fun Server.getChannelId(ref: String): String? {
-    if (ref.startsWith("<#")) {
-        return this.getChannelById(ref.substring(2, ref.length - 1))?.id
+    return if (ref.startsWith("<#")) {
+        this.getChannelById(ref.substring(2, ref.length - 1))?.id
     } else {
-        return this.channels.find { it.name == ref }?.id
+        this.channels.find { it.name == ref }?.id
     }
 }
 

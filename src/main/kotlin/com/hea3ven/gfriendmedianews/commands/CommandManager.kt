@@ -1,10 +1,7 @@
 package com.hea3ven.gfriendmedianews.commands
 
 import com.hea3ven.gfriendmedianews.util.DiscordBot
-import com.hea3ven.gfriendmedianews.util.isAdmin
 import de.btobastian.javacord.DiscordAPI
-import de.btobastian.javacord.entities.Server
-import de.btobastian.javacord.entities.User
 import de.btobastian.javacord.entities.message.Message
 import de.btobastian.javacord.listener.message.MessageCreateListener
 import org.slf4j.LoggerFactory
@@ -38,10 +35,10 @@ class CommandManager(val prefix: String, val bot: DiscordBot) : MessageCreateLis
 
     private fun parseCmdLine(cmdLine: String): Pair<String, String?> {
         val cmdNameEnd = cmdLine.indexOf(' ')
-        if (cmdNameEnd != -1) {
-            return Pair(cmdLine.substring(0, cmdNameEnd), cmdLine.substring(cmdNameEnd + 1))
+        return if (cmdNameEnd != -1) {
+            Pair(cmdLine.substring(0, cmdNameEnd), cmdLine.substring(cmdNameEnd + 1))
         } else {
-            return Pair(cmdLine, null)
+            Pair(cmdLine, null)
         }
     }
 }

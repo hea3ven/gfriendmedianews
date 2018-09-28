@@ -3,13 +3,12 @@ package com.hea3ven.gfriendmedianews.mods.medianews.source
 import com.google.gson.JsonParser
 import com.hea3ven.gfriendmedianews.mods.medianews.model.InstagramNewsConfig
 import com.hea3ven.gfriendmedianews.mods.medianews.post.NewsPost
-import org.mongodb.morphia.annotations.Entity
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
-import java.util.Date
+import java.util.*
 import java.util.regex.Pattern
 
 class InstagramNewsSource : NewsSource() {

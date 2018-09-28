@@ -10,8 +10,7 @@ import de.btobastian.javacord.listener.server.ServerJoinListener
 import de.btobastian.javacord.listener.server.ServerLeaveListener
 import org.slf4j.LoggerFactory
 
-abstract class DiscordBot(val persistence: Persistence,
-                          val discord: DiscordAPI) {
+abstract class DiscordBot(val persistence: Persistence, val discord: DiscordAPI, prefix: String) {
 
     abstract val modules: List<Module>
 
@@ -19,11 +18,11 @@ abstract class DiscordBot(val persistence: Persistence,
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    val commandManager = CommandManager("\$", this)
+    val commandManager = CommandManager(prefix, this)
 
     fun start() {
         modules.flatMap(Module::commands).forEach(commandManager::registerCommand)
-        logger.info("Loaded modules: " + modules.map { it::class.java.simpleName }.joinToString())
+        logger.info("Loaded modules: " + modules.joinToString { it::class.java.simpleName })
 
         logger.info("Connecting to discord")
         discord.setAutoReconnect(false)
@@ -49,7 +48,7 @@ abstract class DiscordBot(val persistence: Persistence,
 
     fun onConnect() {
         persistence.beginTransaction().use { tx ->
-            modules.forEach({ m -> m.onConnect(tx) })
+            modules.forEach { m -> m.onConnect(tx) }
         }
         discord.registerListener(commandManager)
         discord.registerListener(object : ServerJoinListener, ServerLeaveListener {

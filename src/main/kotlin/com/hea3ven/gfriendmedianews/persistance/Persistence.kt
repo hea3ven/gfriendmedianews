@@ -54,21 +54,7 @@ abstract class AbstractDao<T>(protected val ds: Datastore) {
     protected fun <R> createQuery(klass: Class<R>) = ds.createQuery(klass)!!
 
     protected fun createUpdate() = createUpdate(getEntityClass())
-    protected fun <R> createUpdate(klass: Class<R>) = ds.createUpdateOperations(klass)
-
-    //	protected fun <R> find(crit: CriteriaQuery<R>): R? {
-    //		return find(sess.createQuery(crit))
-    //	}
-
-    //	protected fun <R> find(query: TypedQuery<R>): R? {
-    //		val result = query.resultList
-    //		if (result.size != 1)
-    //			return null
-    //		return result[0]
-    //	}
-
-    //	private fun findNamed(queryBuilder: (TypedQuery<T>) -> TypedQuery<T>, queryName: String) = find(
-    //			queryBuilder.invoke(sess.createNamedQuery(queryName, getEntityClass())))
+    protected fun <R> createUpdate(klass: Class<R>) = ds.createUpdateOperations(klass)!!
 
     fun persist(obj: T) {
         ds.save(obj)

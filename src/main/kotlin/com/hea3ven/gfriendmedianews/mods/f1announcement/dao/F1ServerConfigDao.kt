@@ -1,5 +1,6 @@
-package com.hea3ven.gfriendmedianews.mods.f1announcement
+package com.hea3ven.gfriendmedianews.mods.f1announcement.dao
 
+import com.hea3ven.gfriendmedianews.mods.f1announcement.model.F1ServerConfig
 import com.hea3ven.gfriendmedianews.persistance.AbstractDao
 import com.hea3ven.gfriendmedianews.persistance.DaoFactory
 import org.mongodb.morphia.Datastore

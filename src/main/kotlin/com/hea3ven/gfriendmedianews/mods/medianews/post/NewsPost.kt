@@ -18,7 +18,7 @@ open class NewsPost(val color: Color, val date: Date, val userName: String, val 
                 .setTitle(userAction())
                 .setUrl(url)
                 .setDescription(content)
-                .addField("date", dateStr + " KST", true)
+                .addField("date", "$dateStr KST", true)
         if (mediaUrls.size == 1)
             embed.setImage(mediaUrls[0])
         channel.sendMessage(null, embed)
