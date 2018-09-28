@@ -10,7 +10,7 @@ import com.hea3ven.gfriendmedianews.persistance.Persistence
 import com.hea3ven.gfriendmedianews.util.DiscordBot
 import de.btobastian.javacord.DiscordAPI
 
-class ChinguBot(persistence: Persistence, discord: DiscordAPI) : DiscordBot(persistence, discord, "%"/*"\$"*/) {
+class ChinguBot(persistence: Persistence, discord: DiscordAPI) : DiscordBot(persistence, discord, "\$") {
 
     override val modules = listOf(MainModule(this), PermissionsModule(this), MiscModule(),
                                   SocialInteractionsModule(this), MediaNewsModule(this),
