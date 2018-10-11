@@ -5,6 +5,7 @@ import com.hea3ven.gfriendmedianews.ServerNewsManager
 import com.hea3ven.gfriendmedianews.mods.Module
 import com.hea3ven.gfriendmedianews.mods.medianews.command.AddSourceCommand
 import com.hea3ven.gfriendmedianews.mods.medianews.command.MediaInfoCommand
+import com.hea3ven.gfriendmedianews.mods.medianews.command.RmSourceCommand
 import com.hea3ven.gfriendmedianews.mods.medianews.dao.NewsConfigDao
 import com.hea3ven.gfriendmedianews.mods.medianews.dao.ServerConfigDaoFactory
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
@@ -20,7 +21,7 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
 
     private val logger = LoggerFactory.getLogger(MediaNewsModule::class.java)
 
-    override val commands = listOf(AddSourceCommand(this), MediaInfoCommand(this))
+    override val commands = listOf(AddSourceCommand(this), RmSourceCommand(this), MediaInfoCommand(this))
 
     internal val serverManagers = mutableMapOf<String, ServerNewsManager>()
 

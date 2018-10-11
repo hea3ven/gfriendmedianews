@@ -55,6 +55,15 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
         }
     }
 
+    fun rmSource(persistence: Persistence, example: NewsConfig) {
+        val newsConfig = serverConfig.find { it.equalsData(example) } ?: throw IllegalArgumentException(
+                "The source doesn't exists")
+        serverConfig.remove(newsConfig)
+        persistence.beginTransaction().use { sess ->
+            sess.getDao(NewsConfigDao::class.java).delete(newsConfig)
+        }
+    }
+
     fun showInfo(server: Server, message: Message) {
         val output = StringBuilder()
         output.append("Sources:" + "\n")

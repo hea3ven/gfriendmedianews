@@ -60,5 +60,8 @@ abstract class AbstractDao<T>(protected val ds: Datastore) {
         ds.save(obj)
     }
 
+    fun delete(obj: T) {
+        ds.delete(obj)
+    }
 }
 

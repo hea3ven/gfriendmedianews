@@ -50,10 +50,9 @@ class InstagramNewsSource : NewsSource() {
                             val date = Date(post.get("taken_at_timestamp").asLong * 1000)
                             val url = "https://www.instagram.com/p/" + post.asJsonObject.get("shortcode").asString
                             val picUrl = post.get("display_url").asString
-                            val text = post.getAsJsonObject("edge_media_to_caption")
-                                    .getAsJsonArray("edges")[0]
-                                    .asJsonObject.getAsJsonObject("node")
-                                    .get("text").asString
+                            val edges = post.getAsJsonObject("edge_media_to_caption").getAsJsonArray("edges")
+                            val text = if (edges.size() > 0) edges[0].asJsonObject.getAsJsonObject("node").get(
+                                    "text").asString else ""
                             NewsPost(Color(205, 72, 107), date, userName, userUrl, userIcon, this, url,
                                      text, listOf(picUrl))
                         }

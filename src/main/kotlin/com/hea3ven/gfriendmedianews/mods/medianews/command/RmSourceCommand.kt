@@ -9,8 +9,8 @@ import com.hea3ven.gfriendmedianews.util.getChannelId
 import de.btobastian.javacord.entities.message.Message
 import net.sourceforge.argparse4j.inf.Namespace
 
-class AddSourceCommand(private val mod: MediaNewsModule) :
-        Command("addsource", "Adds a news source.", requiresAdmin = true) {
+class RmSourceCommand(private val mod: MediaNewsModule) :
+        Command("rmsource", "Removes a news source.", requiresAdmin = true) {
 
     init {
         argParser.addArgument("channel")
@@ -25,9 +25,9 @@ class AddSourceCommand(private val mod: MediaNewsModule) :
 
         srcChannel = message.channelReceiver.server.getChannelId(srcChannel!!)
         if (srcChannel == null) {
-            message.reply("Could not add the source: could not find the channel " + args.getString("channel"))
-            return
+            srcChannel = args.getString("channel")!!
         }
+
         try {
             val newsConfig = when (srcType) {
                 "twitter" -> TwitterNewsConfig(message.channelReceiver.server.id, srcChannel, srcData)
@@ -35,11 +35,11 @@ class AddSourceCommand(private val mod: MediaNewsModule) :
                 "instagram" -> InstagramNewsConfig(message.channelReceiver.server.id, srcChannel, srcData)
                 else -> throw IllegalArgumentException("$srcType is not a valid source type")
             }
-            mod.serverManagers[message.channelReceiver.server.id]!!.addSource(mod.bot.persistence, newsConfig)
-            message.reply("Added the source successfully")
+            mod.serverManagers[message.channelReceiver.server.id]!!.rmSource(mod.bot.persistence, newsConfig)
+            message.reply("Removed the source successfully")
         } catch (e: Exception) {
-            logger.error("Could not add the source", e)
-            message.reply("Could not add the source: " + e.message)
+            logger.error("Could not remove the source", e)
+            message.reply("Could not remove the source: " + e.message)
         }
     }
 }
