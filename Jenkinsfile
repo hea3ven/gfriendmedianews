@@ -38,8 +38,8 @@ pipeline {
         }
         stage("Update prod environment") {
             steps {
-                sh "docker stop gfriendmedianews-prod-env && docker rm gfriendmedianews-prod-env || true"
-                sh "docker run -d --restart unless-stopped --name gfriendmedianews-prod-env  --volume /home/ec2-user/gfmn/prod:/opt/gfriendmedianews/var --link gfriendmedianews-db-prod-env gfriendmedianews"
+                sh "docker stop gfriendmedianews-ap-prod-env && docker rm gfriendmedianews-ap-prod-env || true"
+                sh "docker run -d --restart unless-stopped --name gfriendmedianews-ap-prod-env  --volume /data/gfmn/prod:/opt/gfriendmedianews/var --link gfriendmedianews-db-prod-env gfriendmedianews"
             }
         }
     }
