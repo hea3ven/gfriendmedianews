@@ -14,10 +14,6 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
 
     private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.ChinguBot")
 
-    private val newsFetchCount = Counter.build().name("gfmn_news_fetch_count")
-            .labelNames("type", "server_id", "channel_id", "label").help("Total of news fetched.").register()
-
-
     fun fetchNews(persistence: Persistence, server: Server) {
         // TODO: handle server no longer existing
         logger.trace("Updating the news for the server {}", server.name)
@@ -40,7 +36,8 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
         return try {
             val news = newsConfig.fetchNews()
             logger.debug("Found " + news.size + " new news for " + newsConfig.label)
-            newsFetchCount.labels(newsConfig.type, newsConfig.serverId, newsConfig.channelId, newsConfig.label).inc(news.size.toDouble())
+            newsFetchCount.labels(newsConfig.type, newsConfig.serverId, newsConfig.channelId, newsConfig.label)
+                    .inc(news.size.toDouble())
             news
         } catch (e: Exception) {
             logger.error("Could not fetch news", e)
@@ -86,5 +83,10 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
         else "<#" + channel.id + ">"
     }
 
+    companion object {
+        private val newsFetchCount = Counter.build().name("gfmn_news_fetch_count")
+                .labelNames("type", "server_id", "channel_id", "label").help("Total of news fetched.").register()
+
+    }
 }
 
