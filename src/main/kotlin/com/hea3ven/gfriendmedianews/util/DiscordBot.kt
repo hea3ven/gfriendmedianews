@@ -25,7 +25,7 @@ abstract class DiscordBot(val persistence: Persistence, val discord: DiscordAPI,
         logger.info("Loaded modules: " + modules.joinToString { it::class.java.simpleName })
 
         logger.info("Connecting to discord")
-        discord.setAutoReconnect(false)
+        discord.setAutoReconnect(true)
         discord.connect(object : FutureCallback<DiscordAPI> {
             override fun onSuccess(result: DiscordAPI?) {
                 logger.info("Connection established")

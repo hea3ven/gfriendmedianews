@@ -7,11 +7,16 @@ import com.hea3ven.gfriendmedianews.persistance.Persistence
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
 import de.btobastian.javacord.entities.Server
 import de.btobastian.javacord.entities.message.Message
+import io.prometheus.client.Counter
 import org.slf4j.LoggerFactory
 
 class ServerNewsManager(val serverId: String, val serverConfig: MutableList<NewsConfig>) {
 
     private val logger = LoggerFactory.getLogger("com.hea3ven.gfriendmedianews.commands.ChinguBot")
+
+    private val newsFetchCount = Counter.build().name("gfmn_news_fetch_count")
+            .labelNames("type", "server_id", "channel_id", "label").help("Total of news fetched.").register()
+
 
     fun fetchNews(persistence: Persistence, server: Server) {
         // TODO: handle server no longer existing
@@ -35,6 +40,7 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
         return try {
             val news = newsConfig.fetchNews()
             logger.debug("Found " + news.size + " new news for " + newsConfig.label)
+            newsFetchCount.labels(newsConfig.type, newsConfig.serverId, newsConfig.channelId, newsConfig.label).inc(news.size.toDouble())
             news
         } catch (e: Exception) {
             logger.error("Could not fetch news", e)

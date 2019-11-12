@@ -4,6 +4,7 @@ import com.hea3ven.gfriendmedianews.util.DiscordBot
 import de.btobastian.javacord.DiscordAPI
 import de.btobastian.javacord.entities.message.Message
 import de.btobastian.javacord.listener.message.MessageCreateListener
+import io.prometheus.client.Counter
 import org.slf4j.LoggerFactory
 
 class CommandManager(val prefix: String, val bot: DiscordBot) : MessageCreateListener {
@@ -11,7 +12,13 @@ class CommandManager(val prefix: String, val bot: DiscordBot) : MessageCreateLis
 
     private val commands: MutableMap<String, Command> = mutableMapOf()
 
-    var permissionManager : PermissionManager = DefaultPermissionManager()
+    private val messageCreateCounter = Counter.build().name("gfmn_discord_message_create")
+            .labelNames("server_id", "channel_id").help("Count of messages received.").register()
+    private val messageCmdPrefixCreateCounter = Counter.build().name("gfmn_discord_message_command_prefix_create")
+            .labelNames("server_id", "channel_id").help("Count of messages with the command prefix received.")
+            .register()
+
+    var permissionManager: PermissionManager = DefaultPermissionManager()
 
     fun registerCommand(command: Command) {
         commands[command.name] = command
@@ -19,9 +26,11 @@ class CommandManager(val prefix: String, val bot: DiscordBot) : MessageCreateLis
 
     override fun onMessageCreate(discord: DiscordAPI, message: Message) {
         logger.trace("Received message")
+        messageCreateCounter.labels(message.channelReceiver.server.id, message.channelReceiver.id).inc()
         if (!message.content.startsWith(prefix)) {
             return
         }
+        messageCmdPrefixCreateCounter.labels(message.channelReceiver.server.id, message.channelReceiver.id).inc()
         val cmdLine = message.content.substring(prefix.length)
         val (cmdName, cmdArgs) = parseCmdLine(cmdLine)
         val command = commands[cmdName] ?: return
