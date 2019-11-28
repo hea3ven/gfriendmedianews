@@ -10,6 +10,7 @@ import com.hea3ven.gfriendmedianews.mods.medianews.dao.NewsConfigDao
 import com.hea3ven.gfriendmedianews.mods.medianews.dao.ServerConfigDaoFactory
 import com.hea3ven.gfriendmedianews.persistance.PersistenceTransaction
 import de.btobastian.javacord.entities.Server
+import io.prometheus.client.Counter
 import org.slf4j.LoggerFactory
 import kotlin.concurrent.thread
 
@@ -29,8 +30,8 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
 
     override fun onConnect(tx: PersistenceTransaction) {
         for (server in bot.discord.servers) {
-            val serverManager = ServerNewsManager(server.id, ArrayList(
-                    tx.getDao(NewsConfigDao::class.java).findByServerId(server.id)))
+            val serverManager = ServerNewsManager(server.id,
+                    ArrayList(tx.getDao(NewsConfigDao::class.java).findByServerId(server.id)))
             serverManagers[serverManager.serverId] = serverManager
         }
         thread {
@@ -51,8 +52,14 @@ class MediaNewsModule(val bot: ChinguBot) : Module {
         for (serverManager in serverManagers.values) {
             val server = bot.discord.getServerById(serverManager.serverId)
             logger.trace("Fetching the news for the server " + serverManager.serverId + " (" + server.name + ")")
+            newsFetching.inc()
             serverManager.fetchNews(bot.persistence, server)
         }
     }
 
+    companion object {
+        private val newsFetching = Counter.build().name("gfmn_media_run_count")
+                .help("Total of times the fetch news job run.").register()
+
+    }
 }

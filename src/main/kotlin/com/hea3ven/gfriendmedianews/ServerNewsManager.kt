@@ -41,6 +41,7 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
             news
         } catch (e: Exception) {
             logger.error("Could not fetch news", e)
+            newsFetchErrors.labels(newsConfig.type, newsConfig.serverId, newsConfig.channelId, newsConfig.label).inc()
             listOf()
         } finally {
             val dao = sess.getDao(NewsConfigDao::class.java)
@@ -84,8 +85,15 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
     }
 
     companion object {
-        private val newsFetchCount = Counter.build().name("gfmn_news_fetch_count")
+        private val newsFetchCount = Counter.build().name("gfmn_media_fetch_news_count")
                 .labelNames("type", "server_id", "channel_id", "label").help("Total of news fetched.").register()
+
+        private val newsFetchTries = Counter.build().name("gfmn_media_fetch_count")
+                .labelNames("type", "server_id", "channel_id", "label").help("Total of times fetching news.").register()
+
+        private val newsFetchErrors = Counter.build().name("gfmn_media_fetch_error")
+                .labelNames("type", "server_id", "channel_id", "label").help("Total of errors when fetching news.")
+                .register()
 
     }
 }
