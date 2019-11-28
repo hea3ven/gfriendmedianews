@@ -34,6 +34,7 @@ class ServerNewsManager(val serverId: String, val serverConfig: MutableList<News
 
     private fun fetchNews(newsConfig: NewsConfig, sess: PersistenceTransaction): List<NewsPost> {
         return try {
+            newsFetchTries.labels(newsConfig.type, newsConfig.serverId, newsConfig.channelId, newsConfig.label).inc()
             val news = newsConfig.fetchNews()
             logger.debug("Found " + news.size + " new news for " + newsConfig.label)
             newsFetchCount.labels(newsConfig.type, newsConfig.serverId, newsConfig.channelId, newsConfig.label)
