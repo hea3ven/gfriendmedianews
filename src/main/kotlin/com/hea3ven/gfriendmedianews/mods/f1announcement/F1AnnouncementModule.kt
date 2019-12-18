@@ -80,9 +80,15 @@ class F1AnnouncementModule(val bot: ChinguBot) : Module {
             while (!bot.stop) {
                 try {
                     val now = ZonedDateTime.now()
-                    val nextEvent = getNextMainEvents(now).first()
+                    val nextEvents = getNextMainEvents(now)
+                    if (nextEvents.isEmpty()) {
+                        logger.trace("No events, sleeping for 6 hours")
+                        Thread.sleep(6 * 60 * 60 * 1000)
+                        continue
+                    }
+                    val nextEvent = nextEvents.first()
                     val startTime = ZonedDateTime.ofInstant(nextEvent.startDate.date.toInstant(),
-                                                            nextEvent.startDate.timeZone?.toZoneId() ?: ZoneId.of("Z"))
+                            nextEvent.startDate.timeZone?.toZoneId() ?: ZoneId.of("Z"))
                     val hours = ChronoUnit.HOURS.between(now, startTime)
                     if (hours > 5) {
                         logger.trace("Sleeping for {} hours", hours - 5)
@@ -122,7 +128,7 @@ class F1AnnouncementModule(val bot: ChinguBot) : Module {
     private fun getNextMainEvents(now: ZonedDateTime) = Filter<VEvent>(
             arrayOf(PeriodRule(Period(DateTime(Date.from(now.toInstant())), Dur(Int.MAX_VALUE))),
                     OrPredicate(HasPropertyRule(Categories("Qualifying Session")),
-                                HasPropertyRule(Categories("Grand Prix")))), Filter.MATCH_ALL).filter(
+                            HasPropertyRule(Categories("Grand Prix")))), Filter.MATCH_ALL).filter(
             f1Calendar.getComponents(Component.VEVENT))
 }
 
